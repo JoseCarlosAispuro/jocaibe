@@ -1,0 +1,9 @@
+{
+  "logo": "JC.AISPURO",
+  "links": [
+    { "label": "Work", "href": "#projects" },
+    { "label": "Timeline", "href": "#timeline" },
+    { "label": "Skills", "href": "#skills" },
+    { "label": "Contact", "href": "#contact" }
+  ]
+}

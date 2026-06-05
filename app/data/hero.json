@@ -1,0 +1,18 @@
+{
+  "headline": {
+    "line1": "José Carlos",
+    "line2_muted": "Aispuro ",
+    "line2_accent": "Beltrán."
+  },
+  "meta": "[ Portfolio · 2026 ]",
+  "copy": {
+    "before": "Senior Frontend Engineer building",
+    "highlight": "award-winning",
+    "after": "interactive web experiences. Six years shipping pixel-perfect work for Alphabet, agencies, and headless commerce."
+  },
+  "cta": {
+    "label": "See selected work",
+    "href": "#projects"
+  },
+  "scrollLabel": "Scroll"
+}

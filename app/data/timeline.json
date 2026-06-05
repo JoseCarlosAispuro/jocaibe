@@ -1,0 +1,37 @@
+{
+  "eyebrow": "Trajectory",
+  "titleMain": "Eight years.",
+  "titleMuted": "Two studios.",
+  "roles": [
+    {
+      "company": "Butchershop Maniak",
+      "role": "Senior Frontend / Full-Stack Lead",
+      "period": "2018 — 2023",
+      "location": "Mexico / Remote",
+      "bullets": [
+        "Led frontend architecture across 14+ agency engagements",
+        "Awwwards Honorable Mention, 2022",
+        "Headless CMS migrations: WordPress → Strapi / Statamic",
+        "Mentored 4 mid-level engineers; ran sprint planning"
+      ],
+      "stack": ["Vue", "Nuxt.js", "WordPress", "Statamic", "Three.js"]
+    },
+    {
+      "company": "Strange Pixels",
+      "role": "Senior Frontend Engineer",
+      "period": "2023 — 2026",
+      "location": "Remote",
+      "bullets": [
+        "Built Wing (Alphabet) marketing surfaces; Core Web Vitals top-decile",
+        "Awwwards Site of the Day for Thick Pickle, 2024",
+        "Headless Shopify Storefront architecture for Octaura",
+        "AI tooling integration — Claude Code, Opencode in production workflow"
+      ],
+      "stack": ["Next.js", "React", "Shopify SF API", "Framer Motion", "Three.js"]
+    }
+  ],
+  "current": {
+    "period": "2026 — Present",
+    "label": "Open for new work."
+  }
+}
