@@ -11,7 +11,7 @@ interface SpringEl extends HTMLElement {
   __spring?: { x: number; y: number; g: number }
 }
 
-export default function SkillsCloud({ groups }: { groups: SkillGroup[] }) {
+const SkillsCloud = ({ groups }: { groups: SkillGroup[] }) => {
   const chipRefs = useRef<(HTMLSpanElement | null)[]>([])
 
   useEffect(() => {
@@ -81,46 +81,27 @@ export default function SkillsCloud({ groups }: { groups: SkillGroup[] }) {
   })
 
   return (
-    <div style={{ marginTop: 80 }}>
-      <div className="mono" style={{ marginBottom: 44, color: 'var(--fg-3)' }}>
+    <div className="mt-20">
+      <div className="mono mb-11 text-(--fg-3)">
         Move through the stack — it moves with you ↘
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 44 }}>
+      <div className="flex flex-col gap-11">
         {groups.map((g, gi) => (
           <div
             key={g.cat}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'clamp(140px, 18vw, 240px) 1fr',
-              gap: 'clamp(20px, 4vw, 56px)',
-              alignItems: 'start',
-              paddingTop: 24,
-              borderTop: '1px solid var(--border-strong)',
-            }}
+            className="grid pt-6 border-t border-(--border-strong) items-start [grid-template-columns:clamp(140px,18vw,240px)_1fr] gap-[clamp(20px,4vw,56px)]"
           >
-            <div className="mono" style={{ color: 'var(--accent)', paddingTop: 8 }}>
+            <div className="mono text-(--accent) pt-2">
               {g.cat}
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+            <div className="flex flex-wrap gap-3">
               {g.items.map((it, i) => (
                 <span
                   key={it}
                   ref={(el) => {
                     chipRefs.current[offsets[gi] + i] = el
                   }}
-                  style={{
-                    padding: '12px 18px',
-                    borderRadius: 999,
-                    border: '1px solid var(--border)',
-                    background: 'var(--bg-1)',
-                    color: 'var(--fg-1)',
-                    fontSize: 'clamp(14px, 1.2vw, 17px)',
-                    fontFamily: 'var(--font-display)',
-                    fontWeight: 400,
-                    letterSpacing: '-0.01em',
-                    willChange: 'transform',
-                    whiteSpace: 'nowrap',
-                  }}
+                  className="rounded-full border border-(--border) bg-(--bg-1) text-(--fg-1) [font-family:var(--font-display)] font-normal tracking-[-0.01em] will-change-transform whitespace-nowrap px-[18px] py-3 text-[clamp(14px,1.2vw,17px)]"
                 >
                   {it}
                 </span>
@@ -132,3 +113,5 @@ export default function SkillsCloud({ groups }: { groups: SkillGroup[] }) {
     </div>
   )
 }
+
+export default SkillsCloud

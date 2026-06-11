@@ -57,7 +57,6 @@
   --s-section: clamp(96px, 14vw, 192px);
 
   /* Layout */
-  --max: 1440px;
   --gutter: clamp(20px, 4vw, 48px);
 
   /* Motion */
@@ -159,13 +158,6 @@
 /* ============================================================
    Utilities
    ============================================================ */
-.container {
-  margin-left: auto;
-  margin-right: auto;
-  max-width: var(--max);
-  padding-left: var(--gutter);
-  padding-right: var(--gutter);
-}
 
 .mono {
   color: var(--fg-3);
@@ -200,12 +192,18 @@ body.has-custom-cursor * { cursor: none !important; }
   border-color: var(--accent);
 }
 
-.cursor-ring.cur-down { background: color-mix(in oklab, var(--accent) 32%, transparent); }
+.cursor-ring.cur-down {
+  background: color-mix(in oklab, var(--accent) 32%, transparent);
+}
 
 .cursor-label {
-  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--accent);
-  transform: scale(0.42); white-space: nowrap;
+  font-size: 9px;
+  white-space: nowrap;
+  color: var(--accent);
+  transform: scale(0.42);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
 }
 
 @media (hover: none), (pointer: coarse) {
@@ -219,29 +217,5 @@ body.has-custom-cursor * { cursor: none !important; }
   backdrop-filter: blur(12px);
 }
 
-/* ── Nav responsive ── */
-@media (min-width: 640px) {
-  .nav-burger { display: none !important; }
-}
-
-@media (max-width: 639px) {
-  .nav-links { display: none !important; }
-}
-
-/* ── Showcase scroller ── */
-.showcase-scroller { cursor: grab; scrollbar-width: none; }
-.showcase-scroller.dragging { cursor: grabbing; scroll-snap-type: none; }
-.showcase-scroller::-webkit-scrollbar { height: 0; display: none; }
-
 /* ── Floating projects ── */
-.floating-row { display: flex; }
-.floating-row.lane-start  { justify-content: flex-start; }
-.floating-row.lane-end    { justify-content: flex-end; }
-.floating-row.lane-center { justify-content: center; }
 .floating-card { opacity: 0; will-change: transform, opacity; }
-
-@media (max-width: 760px) {
-  .floating-stage { gap: 28px !important; }
-  .floating-row { justify-content: center !important; }
-  .floating-card { width: 100% !important; }
-}

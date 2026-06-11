@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from 'react'
 
-export default function CursorFX() {
+const CursorFX = () => {
   const dotRef = useRef<HTMLDivElement>(null)
   const ringRef = useRef<HTMLDivElement>(null)
   const labelRef = useRef<HTMLSpanElement>(null)
@@ -83,3 +83,5 @@ export default function CursorFX() {
     </>
   )
 }
+
+export default CursorFX

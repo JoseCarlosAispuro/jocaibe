@@ -3,48 +3,36 @@
 import { useRef, useEffect } from 'react'
 import { useLenis } from 'lenis/react'
 
-export default function ScrollProgress() {
+const ScrollProgress = () => {
   const ref = useRef<HTMLDivElement>(null)
 
-  const update = () => {
-    const h = document.documentElement.scrollHeight - window.innerHeight
-    const p = h > 0 ? window.scrollY / h : 0
+  // Lenis provides accurate progress on every smoothed scroll tick
+  useLenis(({ progress }) => {
     if (ref.current) {
-      ref.current.style.transform = `scaleX(${Math.max(0, Math.min(1, p))})`
+      ref.current.style.transform = `scaleX(${progress})`
     }
-  }
+  })
 
-  useLenis(update)
-
+  // Resize may change scrollHeight without a scroll event — update manually
   useEffect(() => {
-    update()
+    const update = () => {
+      const h = document.documentElement.scrollHeight - window.innerHeight
+      const p = h > 0 ? window.scrollY / h : 0
+      if (ref.current) ref.current.style.transform = `scaleX(${Math.max(0, Math.min(1, p))})`
+    }
     window.addEventListener('resize', update, { passive: true })
     return () => window.removeEventListener('resize', update)
   }, [])
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 2,
-        zIndex: 60,
-        pointerEvents: 'none',
-      }}
-    >
+    <div className="fixed inset-x-0 top-0 h-0.5 z-[60] pointer-events-none">
       <div
         ref={ref}
-        style={{
-          height: '100%',
-          width: '100%',
-          transformOrigin: '0 50%',
-          transform: 'scaleX(0)',
-          background: 'linear-gradient(90deg, var(--accent), var(--accent-soft))',
-          boxShadow: '0 0 10px var(--accent)',
-        }}
+        className="h-full w-full origin-[0_50%] bg-[linear-gradient(90deg,var(--accent),var(--accent-soft))] shadow-[0_0_10px_var(--accent)]"
+        style={{ transform: 'scaleX(0)' }}
       />
     </div>
   )
 }
+
+export default ScrollProgress

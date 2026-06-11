@@ -1,5 +1,5 @@
 // Not a hook — returns Motion props to spread onto motion.* elements
-export function reveal(delay = 0) {
+export const reveal = (delay = 0) => {
   return {
     initial: { opacity: 0, y: 24 },
     whileInView: { opacity: 1, y: 0 },

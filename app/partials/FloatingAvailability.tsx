@@ -2,44 +2,41 @@
 
 import { useRef, useEffect, useState } from 'react'
 import { motion } from 'motion/react'
+import { useLenis } from 'lenis/react'
 
 const HEARTBEAT_SCALE = [1, 1.45, 1, 1.28, 1, 1]
 const HEARTBEAT_TIMES = [0, 0.11, 0.22, 0.33, 0.45, 1]
 
-export default function FloatingAvailability() {
+const FloatingAvailability = () => {
   const rotaterRef = useRef<HTMLDivElement>(null)
   const [hover, setHover] = useState(false)
   const hovRef = useRef(false)
   const closeT = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const size = 96
+  const velRef = useRef(0)
+
+  // Feed Lenis velocity into the rotation badge — smoothed scroll, no jank
+  useLenis(({ velocity }) => {
+    velRef.current += velocity * 0.05
+    velRef.current = Math.max(-24, Math.min(24, velRef.current))
+  })
 
   useEffect(() => {
-    let angle = 0, vel = 0, lastY = window.scrollY, raf = 0
+    let angle = 0, raf = 0
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-    const onScroll = () => {
-      const y = window.scrollY
-      vel += (y - lastY) * 0.05
-      lastY = y
-      vel = Math.max(-24, Math.min(24, vel))
-    }
     const loop = () => {
       const idle = hovRef.current ? 0.95 : 0.22
-      angle += idle + vel
-      vel *= 0.93
+      angle += idle + velRef.current
+      velRef.current *= 0.93
       if (rotaterRef.current) {
         rotaterRef.current.style.transform = `rotate(${angle}deg)`
       }
       raf = requestAnimationFrame(loop)
     }
     if (!reduce) {
-      window.addEventListener('scroll', onScroll, { passive: true })
       raf = requestAnimationFrame(loop)
     }
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('scroll', onScroll)
-    }
+    return () => cancelAnimationFrame(raf)
   }, [])
 
   const open = () => {
@@ -58,13 +55,7 @@ export default function FloatingAvailability() {
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        right: 'clamp(18px, 3.5vw, 40px)',
-        bottom: 'clamp(18px, 3.5vw, 40px)',
-        zIndex: 60,
-        pointerEvents: 'none',
-      }}
+      className="fixed z-[60] pointer-events-none right-[clamp(18px,3.5vw,40px)] bottom-[clamp(18px,3.5vw,40px)]"
     >
       {/* Card */}
       <motion.div
@@ -77,52 +68,22 @@ export default function FloatingAvailability() {
           pointerEvents: hover ? 'auto' : 'none',
         }}
         transition={{ duration: 0.3, ease: [0.2, 0.7, 0.2, 1] }}
-        style={{
-          position: 'absolute',
-          right: 0,
-          bottom: 'calc(100% + 14px)',
-          width: 296,
-          transformOrigin: 'bottom right',
-        }}
+        className="absolute right-0 w-[296px] origin-bottom-right bottom-[calc(100%+14px)]"
       >
         <a
           href="#contact"
-          style={{
-            display: 'block',
-            position: 'relative',
-            overflow: 'hidden',
-            background: 'color-mix(in oklab, var(--bg-1) 88%, transparent)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid var(--border-strong)',
-            borderRadius: 16,
-            padding: '20px 20px 18px',
-            boxShadow: '0 26px 64px -22px rgba(0,0,0,0.75)',
-          }}
+          className="block relative overflow-hidden border border-(--border-strong) rounded-2xl backdrop-blur-[16px] pt-5 px-5 pb-[18px] shadow-[0_26px_64px_-22px_rgba(0,0,0,0.75)] bg-[color-mix(in_oklab,var(--bg-1)_88%,transparent)]"
         >
           {/* Sheen line */}
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, overflow: 'hidden' }}>
+          <div className="absolute top-0 left-0 right-0 h-0.5 overflow-hidden">
             <motion.div
               animate={{ x: ['100%', '-100%'] }}
               transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(90deg, transparent, var(--accent), transparent)',
-              }}
+              className="absolute inset-0 bg-[linear-gradient(90deg,transparent,var(--accent),transparent)]"
             />
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              marginBottom: 14,
-            }}
-          >
+          <div className="flex items-center gap-2 mb-[14px]">
             {/* Heartbeat dot */}
             <motion.span
               animate={{ scale: HEARTBEAT_SCALE }}
@@ -132,42 +93,17 @@ export default function FloatingAvailability() {
                 ease: 'easeInOut',
                 times: HEARTBEAT_TIMES,
               }}
-              style={{
-                display: 'inline-block',
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                background: 'var(--success)',
-              }}
+              className="inline-block size-2 rounded-full bg-(--success)"
             />
-            <span className="mono" style={{ color: 'var(--success)', whiteSpace: 'nowrap' }}>
+            <span className="mono text-(--success) whitespace-nowrap">
               Available now
             </span>
           </div>
-          <div
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 21,
-              fontWeight: 500,
-              letterSpacing: '-0.02em',
-              lineHeight: 1.22,
-              color: 'var(--fg-0)',
-            }}
-          >
+          <div className="[font-family:var(--font-display)] text-[21px] font-medium tracking-[-0.02em] leading-[1.22] text-(--fg-0)">
             Ready to start your next build — let&rsquo;s make something worth
             shipping.
           </div>
-          <span
-            className="mono"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              marginTop: 16,
-              color: 'var(--accent)',
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <span className="mono inline-flex items-center gap-2 mt-4 text-(--accent) whitespace-nowrap">
             Start a conversation
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
               <path
@@ -189,34 +125,17 @@ export default function FloatingAvailability() {
         onMouseLeave={close}
         animate={{ scale: hover ? 1.06 : 1 }}
         transition={{ duration: 0.32, ease: [0.2, 0.7, 0.2, 1] }}
-        style={{
-          position: 'relative',
-          display: 'grid',
-          placeItems: 'center',
-          width: size,
-          height: size,
-          pointerEvents: 'auto',
-        }}
+        className="relative grid place-items-center pointer-events-auto w-24 h-24"
       >
         <span
-          style={{
-            position: 'absolute',
-            inset: 0,
-            borderRadius: '50%',
-            background: 'color-mix(in oklab, var(--bg-1) 64%, transparent)',
-            backdropFilter: 'blur(8px)',
-            border: '1px solid var(--border)',
-          }}
+          className="absolute inset-0 rounded-full border border-(--border) backdrop-blur-[8px] bg-[color-mix(in_oklab,var(--bg-1)_64%,transparent)]"
         />
-        <div
-          ref={rotaterRef}
-          style={{ position: 'absolute', inset: 0, willChange: 'transform' }}
-        >
+        <div ref={rotaterRef} className="absolute inset-0 will-change-transform">
           <svg
             viewBox="0 0 100 100"
-            width={size}
-            height={size}
-            style={{ display: 'block' }}
+            width={96}
+            height={96}
+            className="block"
           >
             <defs>
               <path
@@ -225,11 +144,7 @@ export default function FloatingAvailability() {
               />
             </defs>
             <motion.text
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 8,
-                letterSpacing: '0.12em',
-              }}
+              className="[font-family:var(--font-mono)] text-[8px] tracking-[0.12em]"
               animate={{ fill: hover ? 'var(--accent)' : 'var(--fg-2)' }}
               transition={{ duration: 0.3 }}
             >
@@ -239,21 +154,12 @@ export default function FloatingAvailability() {
             </motion.text>
           </svg>
           <span
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              width: 16,
-              height: 16,
-              marginTop: -8,
-              marginLeft: -8,
-              background: 'var(--accent)',
-              borderRadius: 3,
-              boxShadow: '0 0 18px 2px var(--accent)',
-            }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-4 rounded-[3px] bg-(--accent) shadow-[0_0_18px_2px_var(--accent)]"
           />
         </div>
       </motion.a>
     </div>
   )
 }
+
+export default FloatingAvailability

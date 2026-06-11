@@ -5,12 +5,12 @@ interface BrandWordmarkProps {
   weight?: number
 }
 
-export default function BrandWordmark({
+const BrandWordmark = ({
   fontSize = 32,
   color = 'var(--fg-0)',
   glow = true,
   weight = 500,
-}: BrandWordmarkProps) {
+}: BrandWordmarkProps) => {
   const px = Math.max(3, Math.round(fontSize * 0.15))
   const stemW = Math.max(2, Math.round(fontSize * 0.082))
   const stemH = fontSize * 0.52
@@ -73,3 +73,5 @@ export default function BrandWordmark({
     </span>
   )
 }
+
+export default BrandWordmark

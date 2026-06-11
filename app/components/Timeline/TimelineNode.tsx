@@ -18,15 +18,13 @@ const TimelineNode = ({
   return (
     <motion.div
       {...reveal(idx * 120)}
-      className="grid gap-[clamp(24px,4vw,64px)] pt-12 pb-12 border-b border-(--border) relative"
-      style={{ gridTemplateColumns: 'clamp(40px,8vw,72px) 1fr' }}
+      className="grid gap-[clamp(24px,4vw,64px)] pt-12 pb-12 border-b border-(--border) relative [grid-template-columns:clamp(40px,8vw,72px)_1fr]"
     >
       {/* Node dot */}
       <div className="relative pt-2">
         <motion.span
           ref={registerDot}
-          className="absolute top-[14px] w-[14px] h-[14px] rounded-full border-2 border-(--accent)"
-          style={{ left: 'calc(clamp(20px, 4vw, 36px) - 7px)' }}
+          className="absolute top-[14px] left-[calc(clamp(20px,4vw,36px)-7px)] w-[14px] h-[14px] rounded-full border-2 border-(--accent)"
           animate={{
             background: lit ? 'var(--accent)' : 'var(--bg-0)',
             boxShadow: lit

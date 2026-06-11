@@ -5,12 +5,12 @@ interface BrandPixelProps {
   style?: React.CSSProperties
 }
 
-export default function BrandPixel({
+const BrandPixel = ({
   size = 12,
   glow = true,
   color = 'var(--accent)',
   style,
-}: BrandPixelProps) {
+}: BrandPixelProps) => {
   return (
     <span
       style={{
@@ -26,3 +26,5 @@ export default function BrandPixel({
     />
   )
 }
+
+export default BrandPixel

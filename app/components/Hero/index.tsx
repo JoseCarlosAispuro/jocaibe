@@ -40,7 +40,7 @@ const Hero = ({ data }: HeroProps) => {
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    return initHeroShader(canvas, { mode: 'constellation' })
+    return initHeroShader(canvas)
   }, [])
 
   // Mouse parallax: content drifts AWAY from cursor + idle organic float
@@ -90,8 +90,7 @@ const Hero = ({ data }: HeroProps) => {
     <section
       ref={sectionRef}
       id="hero"
-      className="relative min-h-screen overflow-hidden flex flex-col justify-end"
-      style={{ paddingBottom: 'clamp(64px, 10vh, 120px)' }}
+      className="relative min-h-screen overflow-hidden flex flex-col justify-end pb-[clamp(64px,10vh,120px)]"
     >
       {/* Canvas background */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-0" />
@@ -99,7 +98,7 @@ const Hero = ({ data }: HeroProps) => {
       {/* Main content */}
       <div
         ref={contentRef}
-        className="container relative z-[2] will-change-transform"
+        className="container mx-auto px-(--gutter) relative z-[2] will-change-transform"
       >
         {/* Meta line */}
         <motion.div
@@ -111,7 +110,7 @@ const Hero = ({ data }: HeroProps) => {
 
         {/* Kinetic headline — deeper parallax layer */}
         <motion.div {...reveal(200)}>
-          <div data-parallax-head style={{ willChange: 'transform' }}>
+          <div data-parallax-head className="will-change-transform">
             <KineticHeadline
               line1={headline.line1}
               line2Muted={headline.line2_muted}
@@ -127,7 +126,7 @@ const Hero = ({ data }: HeroProps) => {
         >
           <p className="text-[clamp(18px,1.6vw,22px)] leading-[1.5] max-w-[520px] text-(--fg-1) [text-wrap:pretty]">
             {copy.before}{' '}
-            <em style={{ color: 'var(--accent)', fontStyle: 'normal' }}>
+            <em className="text-(--accent) not-italic">
               {copy.highlight}
             </em>{' '}
             {copy.after}

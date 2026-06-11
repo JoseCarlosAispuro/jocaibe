@@ -11,17 +11,31 @@ import Link from "next/link";
 
 const MotionLink = motion.create(Link)
 
-interface NavLink {
+interface NavLinkItem {
     label: string
     href: string
 }
 
 interface NavProps {
-    links: NavLink[]
+    links: NavLinkItem[]
     email: string
 }
 
-export default function Navigation({links, email}: NavProps) {
+const NavLink = ({label, href}: NavLinkItem) => {
+    return (
+        <MotionLink
+            href={href}
+            className="[font-family:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase"
+            initial={{ color: 'var(--fg-2)' }}
+            whileHover={{ color: 'var(--accent)' }}
+            transition={{ duration: 0.18 }}
+        >
+            {label}
+        </MotionLink>
+    )
+}
+
+const Navigation = ({links, email}: NavProps) => {
     const [scrolled, setScrolled] = useState(false)
     const [menuOpen, setMenuOpen] = useState(false)
 
@@ -48,14 +62,14 @@ export default function Navigation({links, email}: NavProps) {
                     {'nav-scrolled': scrolled},
                 )}
             >
-                <div className="container flex items-center justify-between h-[72px]">
+                <div className="container mx-auto px-(--gutter) flex items-center justify-between h-[72px]">
                     <Link href="/" className="inline-flex items-center">
                         <BrandWordmark fontSize={23} weight={500}/>
                     </Link>
 
                     <div className="flex items-center gap-8">
                         {/* Desktop links */}
-                        <div className="nav-links flex gap-7">
+                        <div className="hidden sm:flex gap-7">
                             {links.map(({label, href}) => (
                                 <NavLink key={label} label={label} href={href}/>
                             ))}
@@ -63,7 +77,7 @@ export default function Navigation({links, email}: NavProps) {
 
                         {/* Hamburger — mobile */}
                         <button
-                            className="nav-burger w-11 h-11 rounded-full border border-(--border-strong) flex items-center justify-center text-(--fg-0)"
+                            className="sm:hidden w-11 h-11 rounded-full border border-(--border-strong) flex items-center justify-center text-(--fg-0)"
                             aria-label="Open menu"
                             onClick={() => setMenuOpen(true)}>
                             <Hamburger/>
@@ -75,11 +89,7 @@ export default function Navigation({links, email}: NavProps) {
             {/* Mobile overlay */}
             {menuOpen && (
                 <div
-                    className="fixed inset-0 z-[70] flex flex-col backdrop-blur-[10px]"
-                    style={{
-                        background: 'color-mix(in oklab, var(--bg-0) 98%, transparent)',
-                        padding: '20px var(--gutter) 40px',
-                    }}
+                    className="fixed inset-0 z-[70] flex flex-col backdrop-blur-[10px] pt-5 px-(--gutter) pb-10 bg-[color-mix(in_oklab,var(--bg-0)_98%,transparent)]"
                 >
                     <div className="flex items-center justify-between h-[52px]">
                         <BrandWordmark fontSize={23} weight={500}/>
@@ -124,16 +134,4 @@ export default function Navigation({links, email}: NavProps) {
     )
 }
 
-function NavLink({label, href}: NavLink) {
-    return (
-        <MotionLink
-            href={href}
-            className="[font-family:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase"
-            style={{ color: 'var(--fg-2)' }}
-            whileHover={{ color: 'var(--accent)' }}
-            transition={{ duration: 0.18 }}
-        >
-            {label}
-        </MotionLink>
-    )
-}
+export default Navigation

@@ -11,13 +11,13 @@ interface ProjectsData {
   projects: Project[]
 }
 
-export default function Projects({ data }: { data: ProjectsData }) {
+const Projects = ({ data }: { data: ProjectsData }) => {
   const { projects } = data
   const [modal, setModal] = useState<Project | null>(null)
 
   return (
     <section id="projects" className="py-(--s-section) relative">
-      <div className="container">
+      <div className="container mx-auto px-(--gutter)">
         <SectionHeading
           lines={[
             { text: 'Seven projects,' },
@@ -27,30 +27,11 @@ export default function Projects({ data }: { data: ProjectsData }) {
 
         <ProjectsFloating projects={projects} onOpen={setModal} />
 
-        <div
-          style={{
-            marginTop: 64,
-            paddingTop: 32,
-            borderTop: '1px solid var(--border)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 16,
-          }}
-        >
+        <div className="mt-16 pt-8 border-t border-(--border) flex justify-between items-center flex-wrap gap-4">
           <span className="mono">More on request — case studies, deeper dives, full client list</span>
           <a
             href="#contact"
-            style={{
-              color: 'var(--accent)',
-              fontFamily: 'var(--font-mono)',
-              fontSize: 12,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              borderBottom: '1px solid var(--accent)',
-              paddingBottom: 2,
-            }}
+            className="text-(--accent) [font-family:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase border-b border-(--accent) pb-[2px]"
           >
             Reach out →
           </a>
@@ -63,3 +44,5 @@ export default function Projects({ data }: { data: ProjectsData }) {
     </section>
   )
 }
+
+export default Projects

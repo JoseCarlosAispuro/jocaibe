@@ -20,8 +20,7 @@ const TimelineCurrent = ({
   return (
     <motion.div
       {...reveal(200)}
-      className="grid pt-12 relative"
-      style={{ gridTemplateColumns: 'clamp(40px,8vw,72px) 1fr', gap: 'clamp(24px,4vw,64px)' }}
+      className="grid pt-12 relative [grid-template-columns:clamp(40px,8vw,72px)_1fr] gap-[clamp(24px,4vw,64px)]"
     >
       <div className="relative">
         <motion.span
@@ -45,11 +44,8 @@ const TimelineCurrent = ({
                 }
               : { duration: 0.32 }
           }
-          className="absolute top-2 w-4 h-4 rounded-full bg-(--accent) outline-[6px] outline-solid outline-(--bg-0)"
-          style={{
-            left: 'calc(clamp(20px, 4vw, 36px) - 8px)',
-            boxShadow: lit ? '0 0 12px 3px var(--accent)' : 'none',
-          }}
+          className="absolute top-2 w-4 h-4 rounded-full bg-(--accent) outline-[6px] outline-solid outline-(--bg-0) left-[calc(clamp(20px,4vw,36px)-8px)]"
+          style={{ boxShadow: lit ? '0 0 12px 3px var(--accent)' : 'none' }}
         />
       </div>
       <div>

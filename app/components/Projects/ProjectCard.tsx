@@ -16,7 +16,7 @@ interface ProjectCardProps {
 
 const EASE = [0.2, 0.7, 0.2, 1] as [number, number, number, number]
 
-export default function ProjectCard({ project, variant, onOpen }: ProjectCardProps) {
+const ProjectCard = ({ project, variant, onOpen }: ProjectCardProps) => {
   const [hover, setHover] = useState(false)
   const tilt = useTilt(6)
   const isHero = variant === 'hero'
@@ -31,7 +31,7 @@ export default function ProjectCard({ project, variant, onOpen }: ProjectCardPro
       whileHover={{ y: -4 }}
       transition={{ duration: 0.32, ease: EASE }}
       data-cursor="View"
-      style={{ position: 'relative', cursor: 'pointer' }}
+      className="relative cursor-pointer"
       onClick={() => onOpen(project)}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -41,28 +41,14 @@ export default function ProjectCard({ project, variant, onOpen }: ProjectCardPro
         ref={tilt.ref}
         onMouseMove={tilt.onMouseMove}
         onMouseLeave={tilt.onMouseLeave}
-        style={{
-          position: 'relative',
-          overflow: 'hidden',
-          borderRadius: 4,
-          aspectRatio: ratio,
-          background: project.bg,
-          border: `1px solid ${isDark ? 'var(--border-strong)' : 'var(--border)'}`,
-          transition: 'transform 240ms cubic-bezier(0.2,0.7,0.2,1)',
-          willChange: 'transform',
-        }}
+        className={`relative overflow-hidden rounded-[4px] aspect-[${ratio.replace(/ \/ /g, '/')}] ${isDark ? 'border border-(--border-strong)' : 'border border-(--border)'} transition-transform duration-[240ms] ease-[cubic-bezier(0.2,0.7,0.2,1)] will-change-transform`}
+        style={{ background: project.bg }}
       >
         {/* Spotlight */}
         <motion.div
           animate={{ opacity: hover ? 1 : 0 }}
           transition={{ duration: 0.26 }}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            pointerEvents: 'none',
-            background:
-              'radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), color-mix(in oklab, var(--accent) 22%, transparent), transparent 62%)',
-          }}
+          className="absolute inset-0 pointer-events-none bg-[radial-gradient(320px_circle_at_var(--mx,50%)_var(--my,50%),color-mix(in_oklab,var(--accent)_22%,transparent),transparent_62%)]"
         />
 
         {/* Cover image */}
@@ -73,13 +59,7 @@ export default function ProjectCard({ project, variant, onOpen }: ProjectCardPro
             loading="lazy"
             animate={{ scale: hover ? 1.04 : 1 }}
             transition={{ duration: 0.6, ease: EASE }}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-            }}
+            className="absolute inset-0 w-full h-full object-cover"
           />
         )}
 
@@ -87,33 +67,19 @@ export default function ProjectCard({ project, variant, onOpen }: ProjectCardPro
         {!project.cover && (
           <>
             <div
+              className="absolute inset-0"
               style={{
-                position: 'absolute',
-                inset: 0,
                 backgroundImage: isDark
                   ? 'repeating-linear-gradient(0deg, rgba(94,234,212,0.06) 0 1px, transparent 1px 32px), repeating-linear-gradient(90deg, rgba(94,234,212,0.06) 0 1px, transparent 1px 32px)'
                   : 'repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 24px)',
               }}
             />
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
+            <div className="absolute inset-0 flex items-center justify-center">
               <div
+                className="[font-family:var(--font-mono)] text-[11px] tracking-[0.1em] uppercase px-[14px] py-2 rounded-[2px]"
                 style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 11,
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
                   color: isDark ? 'rgba(94,234,212,0.45)' : 'rgba(255,255,255,0.4)',
-                  padding: '8px 14px',
                   border: `1px dashed ${isDark ? 'rgba(94,234,212,0.25)' : 'rgba(255,255,255,0.2)'}`,
-                  borderRadius: 2,
                 }}
               >
                 ▤ project shot — {project.title}
@@ -124,44 +90,17 @@ export default function ProjectCard({ project, variant, onOpen }: ProjectCardPro
 
         {/* Scrim over real image */}
         {project.cover && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              pointerEvents: 'none',
-              background:
-                'linear-gradient(180deg, rgba(0,0,0,0.18) 0%, transparent 32%, transparent 55%, rgba(0,0,0,0.55) 100%)',
-            }}
-          />
+          <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(180deg,rgba(0,0,0,0.18)_0%,transparent_32%,transparent_55%,rgba(0,0,0,0.55)_100%)]" />
         )}
 
         {/* Award badge */}
         {project.award && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 24,
-              left: 24,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '6px 10px',
-              borderRadius: 2,
-              background: 'color-mix(in oklab, var(--bg-0) 70%, transparent)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid var(--border-strong)',
-            }}
-          >
+          <div className="absolute top-6 left-6 flex items-center gap-2 px-[10px] py-[6px] rounded-[2px] backdrop-blur-[8px] border border-(--border-strong) bg-[color-mix(in_oklab,var(--bg-0)_70%,transparent)]">
             <span
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                background:
-                  project.award.tier === 'SOTD' ? 'var(--accent)' : 'var(--highlight)',
-              }}
+              className="size-2 rounded-full"
+              style={{ background: project.award.tier === 'SOTD' ? 'var(--accent)' : 'var(--highlight)' }}
             />
-            <span className="mono" style={{ color: 'var(--fg-0)', fontSize: 10 }}>
+            <span className="mono text-(--fg-0) text-[10px]">
               {project.award.label}
             </span>
           </div>
@@ -171,30 +110,12 @@ export default function ProjectCard({ project, variant, onOpen }: ProjectCardPro
         <motion.div
           animate={{ opacity: hover ? 1 : 0, y: hover ? 0 : -6 }}
           transition={{ duration: 0.28, ease: EASE }}
-          style={{
-            position: 'absolute',
-            top: 24,
-            right: 24,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 6,
-            alignItems: 'flex-end',
-          }}
+          className="absolute top-6 right-6 flex flex-col gap-[6px] items-end"
         >
           {project.stack.map((s) => (
             <span
               key={s}
-              style={{
-                padding: '4px 10px',
-                borderRadius: 2,
-                background: 'color-mix(in oklab, var(--bg-0) 70%, transparent)',
-                backdropFilter: 'blur(8px)',
-                border: '1px solid var(--border-strong)',
-                fontFamily: 'var(--font-mono)',
-                fontSize: 10,
-                letterSpacing: '0.06em',
-                color: 'var(--fg-0)',
-              }}
+              className="py-1 px-[10px] rounded-[2px] backdrop-blur-[8px] border border-(--border-strong) [font-family:var(--font-mono)] text-[10px] tracking-[0.06em] text-(--fg-0) bg-[color-mix(in_oklab,var(--bg-0)_70%,transparent)]"
             >
               {s}
             </span>
@@ -202,26 +123,10 @@ export default function ProjectCard({ project, variant, onOpen }: ProjectCardPro
         </motion.div>
 
         {/* Title overlay */}
-        <div
-          style={{
-            position: 'absolute',
-            left: 32,
-            bottom: 32,
-            right: 32,
-          }}
-        >
+        <div className="absolute left-8 bottom-8 right-8">
           <h3
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: isHero
-                ? 'clamp(48px, 7vw, 96px)'
-                : 'clamp(32px, 4vw, 56px)',
-              fontWeight: 500,
-              letterSpacing: '-0.03em',
-              lineHeight: 0.95,
-              color: project.cover ? '#fff' : 'var(--fg-0)',
-              textShadow: project.cover ? '0 2px 24px rgba(0,0,0,0.4)' : 'none',
-            }}
+            className={`[font-family:var(--font-display)] ${isHero ? 'text-[clamp(48px,7vw,96px)]' : 'text-[clamp(32px,4vw,56px)]'} font-medium tracking-[-0.03em] leading-[0.95] ${project.cover ? 'text-white' : 'text-(--fg-0)'}`}
+            style={{ textShadow: project.cover ? '0 2px 24px rgba(0,0,0,0.4)' : 'none' }}
           >
             {project.title}
           </h3>
@@ -229,41 +134,18 @@ export default function ProjectCard({ project, variant, onOpen }: ProjectCardPro
       </div>
 
       {/* Meta below card */}
-      <div
-        style={{
-          marginTop: 16,
-          display: 'flex',
-          alignItems: 'baseline',
-          justifyContent: 'space-between',
-          gap: 16,
-          flexWrap: 'wrap',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'baseline',
-            gap: 16,
-            flexWrap: 'wrap',
-          }}
-        >
+      <div className="mt-4 flex items-baseline justify-between gap-4 flex-wrap">
+        <div className="flex items-baseline gap-4 flex-wrap">
           <span className="mono">{project.year}</span>
           {project.tags?.map((tag) => (
             <span
               key={tag}
-              className="mono"
-              style={{
-                padding: '3px 8px',
-                border: '1px solid var(--border)',
-                borderRadius: 999,
-                fontSize: 10,
-                color: 'var(--fg-2)',
-              }}
+              className="mono py-[3px] px-2 border border-(--border) rounded-full text-[10px] text-(--fg-2)"
             >
               {tag}
             </span>
           ))}
-          <span style={{ color: 'var(--fg-1)', fontSize: 15 }}>{project.subtitle}</span>
+          <span className="text-(--fg-1) text-[15px]">{project.subtitle}</span>
         </div>
         <motion.span
           className="mono"
@@ -276,3 +158,5 @@ export default function ProjectCard({ project, variant, onOpen }: ProjectCardPro
     </motion.article>
   )
 }
+
+export default ProjectCard

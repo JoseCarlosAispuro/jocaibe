@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Space_Grotesk, JetBrains_Mono } from 'next/font/google'
-import './globals.css'
+import '@/app/styles/globals.css'
 import 'lenis/dist/lenis.css'
 import LenisProvider from '@/app/partials/LenisProvider'
 
@@ -22,11 +22,11 @@ export const metadata: Metadata = {
     'Senior Frontend Engineer building award-winning interactive web experiences.',
 }
 
-export default function RootLayout({
+const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode
-}>) {
+}>) => {
   return (
     <html
       lang="en"
@@ -38,3 +38,5 @@ export default function RootLayout({
     </html>
   )
 }
+
+export default RootLayout

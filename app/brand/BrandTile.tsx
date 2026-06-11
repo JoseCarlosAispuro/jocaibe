@@ -5,7 +5,7 @@ interface BrandTileProps {
   radius?: number
 }
 
-export default function BrandTile({ size = 32, radius }: BrandTileProps) {
+const BrandTile = ({ size = 32, radius }: BrandTileProps) => {
   return (
     <span
       style={{
@@ -46,3 +46,5 @@ export default function BrandTile({ size = 32, radius }: BrandTileProps) {
     </span>
   )
 }
+
+export default BrandTile

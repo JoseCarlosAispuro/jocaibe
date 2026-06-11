@@ -4,15 +4,13 @@ import { useEffect } from 'react'
 import { motion } from 'motion/react'
 import type { Project } from '@/app/types/project'
 
-function Meta({ label, value, link }: { label: string; value: string; link?: boolean }) {
+const Meta = ({ label, value, link }: { label: string; value: string; link?: boolean }) => {
   return (
     <div>
-      <div className="mono" style={{ marginBottom: 4 }}>
-        {label}
-      </div>
-      <div style={{ fontSize: 16, color: 'var(--fg-0)' }}>
+      <div className="mono mb-1">{label}</div>
+      <div className="text-[16px] text-(--fg-0)">
         {link ? (
-          <a href="#" style={{ borderBottom: '1px solid var(--fg-3)' }}>
+          <a href="#" className="border-b border-(--fg-3)">
             {value} ↗
           </a>
         ) : (
@@ -28,7 +26,7 @@ interface ProjectModalProps {
   onClose: () => void
 }
 
-export default function ProjectModal({ project, onClose }: ProjectModalProps) {
+const ProjectModal = ({ project, onClose }: ProjectModalProps) => {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -50,18 +48,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.22, ease: 'linear' }}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 100,
-        background: 'color-mix(in oklab, var(--bg-0) 80%, transparent)',
-        backdropFilter: 'blur(16px)',
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        padding: 'clamp(24px, 6vh, 64px) clamp(16px, 4vw, 48px)',
-        overflowY: 'auto',
-      }}
+      className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto backdrop-blur-[16px] py-[clamp(24px,6vh,64px)] px-[clamp(16px,4vw,48px)] bg-[color-mix(in_oklab,var(--bg-0)_80%,transparent)]"
       onClick={onClose}
     >
       <motion.div
@@ -70,75 +57,30 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
         exit={{ y: '100vh' }}
         transition={{ duration: 0.46, ease: [0.2, 0.7, 0.2, 1] }}
         onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '100%',
-          maxWidth: 1100,
-          background: 'var(--bg-1)',
-          border: '1px solid var(--border)',
-          borderRadius: 8,
-          overflow: 'hidden',
-          willChange: 'transform',
-        }}
+        className="w-full max-w-[1100px] bg-(--bg-1) border border-(--border) rounded-lg overflow-hidden will-change-transform"
       >
         {/* Hero image */}
         <div
-          style={{
-            position: 'relative',
-            aspectRatio: '21 / 9',
-            background: project.bg,
-          }}
+          className="relative aspect-[21/9]"
+          style={{ background: project.bg }}
         >
           {project.cover ? (
             <>
               <img
                 src={project.cover}
                 alt={project.title}
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                }}
+                className="absolute inset-0 w-full h-full object-cover"
               />
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background:
-                    'linear-gradient(180deg, rgba(0,0,0,0.1) 0%, transparent 40%, rgba(0,0,0,0.55) 100%)',
-                }}
-              />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.1)_0%,transparent_40%,rgba(0,0,0,0.55)_100%)]" />
             </>
           ) : (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundImage:
-                  'repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 24px)',
-              }}
-            />
+            <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.04)_0_1px,transparent_1px_24px)]" />
           )}
 
           <button
             onClick={onClose}
             aria-label="Close"
-            style={{
-              position: 'absolute',
-              top: 20,
-              right: 20,
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              border: '1px solid var(--border-strong)',
-              background: 'color-mix(in oklab, var(--bg-0) 70%, transparent)',
-              backdropFilter: 'blur(8px)',
-              color: 'var(--fg-0)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+            className="absolute top-5 right-5 size-10 rounded-full border border-(--border-strong) text-(--fg-0) flex items-center justify-center backdrop-blur-[8px] bg-[color-mix(in_oklab,var(--bg-0)_70%,transparent)]"
           >
             <svg width="14" height="14" viewBox="0 0 14 14">
               <path
@@ -149,172 +91,76 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
             </svg>
           </button>
 
-          <div style={{ position: 'absolute', left: 40, bottom: 40, right: 40 }}>
+          <div className="absolute left-10 bottom-10 right-10">
             {project.award && (
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '6px 10px',
-                  border: '1px solid var(--border-strong)',
-                  borderRadius: 2,
-                  marginBottom: 20,
-                  background: 'color-mix(in oklab, var(--bg-0) 70%, transparent)',
-                }}
-              >
+              <div className="inline-flex items-center gap-2 px-[10px] py-[6px] border border-(--border-strong) rounded-[2px] mb-5 bg-[color-mix(in_oklab,var(--bg-0)_70%,transparent)]">
                 <span
+                  className="size-2 rounded-full"
                   style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
                     background:
                       project.award.tier === 'SOTD' ? 'var(--accent)' : 'var(--highlight)',
                   }}
                 />
-                <span className="mono" style={{ color: 'var(--fg-0)', fontSize: 10 }}>
+                <span className="mono text-(--fg-0) text-[10px]">
                   {project.award.label}
                 </span>
               </div>
             )}
-            <h2
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(40px, 6vw, 72px)',
-                fontWeight: 500,
-                letterSpacing: '-0.03em',
-                lineHeight: 0.95,
-                color: 'var(--fg-0)',
-              }}
-            >
+            <h2 className="[font-family:var(--font-display)] text-[clamp(40px,6vw,72px)] font-medium tracking-[-0.03em] leading-[0.95] text-(--fg-0)">
               {project.title}
             </h2>
           </div>
         </div>
 
         {/* Body */}
-        <div style={{ padding: 'clamp(32px, 4vw, 56px)' }}>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(12, 1fr)',
-              gap: 32,
-            }}
-          >
+        <div className="p-[clamp(32px,4vw,56px)]">
+          <div className="grid grid-cols-12 gap-8">
             {/* Left */}
-            <div style={{ gridColumn: 'span 7' }}>
-              <p
-                style={{
-                  fontSize: 20,
-                  lineHeight: 1.45,
-                  color: 'var(--fg-0)',
-                }}
-              >
+            <div className="col-span-7">
+              <p className="text-[20px] leading-[1.45] text-(--fg-0)">
                 {project.summary}
               </p>
 
               {project.shots && project.shots.length > 0 ? (
-                <div
-                  style={{
-                    marginTop: 40,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 16,
-                  }}
-                >
+                <div className="mt-10 flex flex-col gap-4">
                   {project.shots.map((src, i) => (
                     <div
                       key={i}
-                      style={{
-                        aspectRatio: '16/9',
-                        borderRadius: 4,
-                        overflow: 'hidden',
-                        border: '1px solid var(--border)',
-                        background: 'var(--bg-2)',
-                      }}
+                      className="aspect-[16/9] rounded border border-(--border) bg-(--bg-2) overflow-hidden"
                     >
                       <img
                         src={src}
                         alt={`${project.title} screenshot ${i + 1}`}
                         loading="lazy"
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          display: 'block',
-                        }}
+                        className="w-full h-full object-cover block"
                       />
                     </div>
                   ))}
                 </div>
               ) : (
-                <div
-                  style={{
-                    marginTop: 40,
-                    aspectRatio: '16/9',
-                    background: 'var(--bg-2)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 4,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <div
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      backgroundImage:
-                        'repeating-linear-gradient(135deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 18px)',
-                    }}
-                  />
+                <div className="mt-10 aspect-[16/9] bg-(--bg-2) border border-(--border) rounded flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(255,255,255,0.03)_0_1px,transparent_1px_18px)]" />
                   <span className="mono">▤ in-context screenshot</span>
                 </div>
               )}
             </div>
 
             {/* Right */}
-            <div style={{ gridColumn: 'span 5' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+            <div className="col-span-5">
+              <div className="flex flex-col gap-8">
                 <Meta label="Role" value={project.role} />
                 <Meta label="Year" value={project.year} />
                 <Meta label="URL" value={project.url} link />
 
                 <div>
                   <span className="mono">Impact</span>
-                  <div
-                    style={{
-                      marginTop: 14,
-                      display: 'grid',
-                      gridTemplateColumns: '1fr 1fr 1fr',
-                      gap: 1,
-                      background: 'var(--border)',
-                      border: '1px solid var(--border)',
-                    }}
-                  >
+                  <div className="mt-[14px] grid grid-cols-3 gap-px bg-(--border) border border-(--border)">
                     {project.impact.map(([num, label]) => (
-                      <div
-                        key={label}
-                        style={{
-                          background: 'var(--bg-1)',
-                          padding: '16px 12px',
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontFamily: 'var(--font-display)',
-                            fontSize: 28,
-                            fontWeight: 500,
-                            color: 'var(--fg-0)',
-                            letterSpacing: '-0.02em',
-                            lineHeight: 1,
-                          }}
-                        >
+                      <div key={label} className="bg-(--bg-1) px-3 py-4">
+                        <div className="[font-family:var(--font-display)] text-[28px] font-medium text-(--fg-0) tracking-[-0.02em] leading-none">
                           {num}
                         </div>
-                        <div className="mono" style={{ marginTop: 8, fontSize: 10 }}>
+                        <div className="mono mt-2 text-[10px]">
                           {label}
                         </div>
                       </div>
@@ -324,25 +170,11 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
 
                 <div>
                   <span className="mono">Stack</span>
-                  <div
-                    style={{
-                      marginTop: 14,
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: 6,
-                    }}
-                  >
+                  <div className="mt-[14px] flex flex-wrap gap-[6px]">
                     {project.stack.map((s) => (
                       <span
                         key={s}
-                        className="mono"
-                        style={{
-                          padding: '6px 10px',
-                          border: '1px solid var(--border)',
-                          borderRadius: 4,
-                          color: 'var(--fg-1)',
-                          fontSize: 11,
-                        }}
+                        className="mono px-[10px] py-[6px] border border-(--border) rounded text-[11px] text-(--fg-1)"
                       >
                         {s}
                       </span>
@@ -357,3 +189,5 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
     </motion.div>
   )
 }
+
+export default ProjectModal

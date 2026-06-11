@@ -2,10 +2,12 @@
 
 import { ReactLenis } from 'lenis/react'
 
-export default function LenisProvider({ children }: { children: React.ReactNode }) {
+const LenisProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <ReactLenis root options={{ lerp: 0.1, duration: 1.2, smoothWheel: true }}>
       {children}
     </ReactLenis>
   )
 }
+
+export default LenisProvider

@@ -5,7 +5,7 @@ import { motion } from 'motion/react'
 import { reveal } from '@/app/hooks/useReveal'
 import BrandWordmark from './BrandWordmark'
 
-export default function BrandSignoff() {
+const BrandSignoff = () => {
   const wrapRef = useRef<HTMLDivElement>(null)
   const [fs, setFs] = useState(120)
 
@@ -27,24 +27,13 @@ export default function BrandSignoff() {
     <motion.div
       ref={wrapRef}
       {...reveal(0)}
-      style={{ marginTop: 'clamp(96px, 14vw, 180px)' }}
+      className="mt-[clamp(96px,14vw,180px)]"
     >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 16,
-        }}
-      >
+      <div className="flex items-end justify-between flex-wrap gap-4">
         <BrandWordmark fontSize={fs} weight={500} />
         <span
-          className="mono"
-          style={{
-            whiteSpace: 'nowrap',
-            paddingBottom: Math.max(6, fs * 0.06),
-          }}
+          className="mono whitespace-nowrap"
+          style={{ paddingBottom: Math.max(6, fs * 0.06) }}
         >
           jocaibe.com ↗
         </span>
@@ -52,3 +41,5 @@ export default function BrandSignoff() {
     </motion.div>
   )
 }
+
+export default BrandSignoff

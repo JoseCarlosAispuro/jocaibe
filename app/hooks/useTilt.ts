@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-export function useTilt(max = 7) {
+export const useTilt = (max = 7) => {
   const ref = useRef<HTMLDivElement>(null)
 
   const onMouseMove = (e: React.MouseEvent) => {

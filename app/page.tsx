@@ -15,7 +15,7 @@ import Projects from '@/app/components/Projects'
 import Skills from '@/app/components/Skills'
 import Contact from '@/app/components/Contact'
 
-export default function Home() {
+const Home = () => {
   return (
     <>
       <CursorFX />
@@ -35,3 +35,5 @@ export default function Home() {
     </>
   )
 }
+
+export default Home

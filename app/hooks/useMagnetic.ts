@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react'
 import { useMotionValue, useSpring } from 'motion/react'
 
-export function useMagnetic(strength = 0.35) {
+export const useMagnetic = (strength = 0.35) => {
   const ref = useRef<HTMLElement>(null)
   const mx = useMotionValue(0)
   const my = useMotionValue(0)

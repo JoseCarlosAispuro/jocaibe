@@ -27,7 +27,7 @@ export interface TimelineData {
 }
 
 // ── Index ─────────────────────────────────────────────────
-export default function Timeline({ data }: { data: TimelineData }) {
+const Timeline = ({ data }: { data: TimelineData }) => {
   const {eyebrow, titleMain, titleMuted, roles, current, } = {...data}
 
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -72,7 +72,7 @@ export default function Timeline({ data }: { data: TimelineData }) {
 
   return (
     <section id="timeline" className="py-(--s-section) relative">
-      <div className="container">
+      <div className="container mx-auto px-(--gutter)">
         <SectionHeading
           lines={[
             { text: titleMain },
@@ -83,27 +83,18 @@ export default function Timeline({ data }: { data: TimelineData }) {
         <div ref={wrapRef} className="relative mt-24">
           {/* Track — dim background line */}
           <div
-            className="absolute top-2 bottom-2 w-px bg-(--border-strong)"
-            style={{ left: 'clamp(20px, 4vw, 36px)' }}
+            className="absolute top-2 bottom-2 w-px bg-(--border-strong) left-[clamp(20px,4vw,36px)]"
           />
 
           {/* Fill — accent line that draws on scroll */}
           <div
             ref={fillRef}
-            className="absolute top-2 w-0.5 -ml-px"
-            style={{
-              left: 'clamp(20px, 4vw, 36px)',
-              height: 0,
-              background: 'linear-gradient(180deg, var(--accent), var(--accent-soft))',
-              boxShadow: '0 0 12px var(--accent)',
-              transition: 'height 600ms cubic-bezier(0.2, 0.7, 0.2, 1)',
-            }}
+            className="absolute top-2 w-0.5 -ml-px left-[clamp(20px,4vw,36px)] h-0 bg-[linear-gradient(180deg,var(--accent),var(--accent-soft))] shadow-[0_0_12px_var(--accent)] transition-[height] duration-[600ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]"
           >
             {/* Glowing head */}
             <span
               ref={headRef}
-              className="absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2 w-[7px] h-[7px] rounded-full bg-(--accent) opacity-0 transition-opacity duration-200"
-              style={{ boxShadow: '0 0 12px 3px var(--accent)' }}
+              className="absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2 w-[7px] h-[7px] rounded-full bg-(--accent) opacity-0 transition-opacity duration-200 shadow-[0_0_12px_3px_var(--accent)]"
             />
           </div>
 
@@ -129,3 +120,5 @@ export default function Timeline({ data }: { data: TimelineData }) {
     </section>
   )
 }
+
+export default Timeline

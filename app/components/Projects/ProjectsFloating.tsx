@@ -25,7 +25,7 @@ interface FloatingCardProps {
   register: (el: HTMLElement | null) => void
 }
 
-function FloatingCard({ project, cfg, onOpen, register }: FloatingCardProps) {
+const FloatingCard = ({ project, cfg, onOpen, register }: FloatingCardProps) => {
   const [hover, setHover] = useState(false)
   const innerRef = useRef<HTMLDivElement>(null)
   const isDark = project.dark
@@ -39,61 +39,53 @@ function FloatingCard({ project, cfg, onOpen, register }: FloatingCardProps) {
   }
 
   return (
-    <div className={`floating-row lane-${cfg.lane}`}>
+    <div className={`flex ${cfg.lane === 'start' ? 'justify-start' : 'justify-end'} max-md:justify-center`}>
       <article
         data-cursor="View"
-        className="floating-card"
+        className="floating-card max-md:!w-full cursor-pointer"
         ref={register}
         onClick={() => onOpen(project)}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
-        style={{ width: cfg.w, cursor: 'pointer' }}
+        style={{ width: cfg.w }}
       >
         <div
           ref={innerRef}
           onMouseMove={onMouseMove}
+          className={`relative overflow-hidden rounded-lg aspect-[${cfg.ratio.replace(/ \/ /g, '/')}] ${isDark ? 'border border-(--border-strong)' : 'border border-(--border)'} transition-shadow duration-[360ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]`}
           style={{
-            position: 'relative',
-            overflow: 'hidden',
-            borderRadius: 8,
-            aspectRatio: cfg.ratio,
             background: project.bg,
-            border: `1px solid ${isDark ? 'var(--border-strong)' : 'var(--border)'}`,
             boxShadow: hover
               ? '0 60px 110px -34px rgba(0,0,0,0.78), 0 0 0 1px color-mix(in oklab, var(--accent) 28%, transparent)'
               : '0 34px 70px -38px rgba(0,0,0,0.62)',
-            transition: 'box-shadow 360ms cubic-bezier(0.2,0.7,0.2,1)',
           }}
         >
           {/* pointer spotlight */}
-          <div style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2,
-            background: 'radial-gradient(360px circle at var(--mx,50%) var(--my,50%), color-mix(in oklab, var(--accent) 22%, transparent), transparent 60%)',
-            opacity: hover ? 1 : 0, transition: 'opacity 260ms',
-          }} />
+          <div
+            className={`absolute inset-0 pointer-events-none z-[2] transition-opacity duration-[260ms] bg-[radial-gradient(360px_circle_at_var(--mx,50%)_var(--my,50%),color-mix(in_oklab,var(--accent)_22%,transparent),transparent_60%)] ${hover ? 'opacity-100' : 'opacity-0'}`}
+          />
 
           {project.cover && (
             <img
               src={project.cover}
               alt={project.title}
               loading="lazy"
-              style={{
-                position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-                transform: hover ? 'scale(1.05)' : 'scale(1)',
-                transition: 'transform 700ms cubic-bezier(0.2,0.7,0.2,1)',
-              }}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-[700ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]"
+              style={{ transform: hover ? 'scale(1.05)' : 'scale(1)' }}
             />
           )}
           {!project.cover && (
             <>
-              <div style={{
-                position: 'absolute', inset: 0,
-                backgroundImage: isDark
-                  ? 'repeating-linear-gradient(0deg, rgba(94,234,212,0.06) 0 1px, transparent 1px 32px), repeating-linear-gradient(90deg, rgba(94,234,212,0.06) 0 1px, transparent 1px 32px)'
-                  : 'repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 26px)',
-              }} />
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span className="mono" style={{ color: 'rgba(255,255,255,0.32)', border: '1px dashed rgba(255,255,255,0.18)', padding: '8px 14px', borderRadius: 2 }}>
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: isDark
+                    ? 'repeating-linear-gradient(0deg, rgba(94,234,212,0.06) 0 1px, transparent 1px 32px), repeating-linear-gradient(90deg, rgba(94,234,212,0.06) 0 1px, transparent 1px 32px)'
+                    : 'repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 26px)',
+                }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="mono px-[14px] py-2 rounded-[2px] text-[rgba(255,255,255,0.32)] border border-dashed border-[rgba(255,255,255,0.18)]">
                   ▤ project shot — {project.title}
                 </span>
               </div>
@@ -101,63 +93,43 @@ function FloatingCard({ project, cfg, onOpen, register }: FloatingCardProps) {
           )}
 
           {/* legibility scrim */}
-          <div style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none',
-            background: 'linear-gradient(180deg, rgba(0,0,0,0.16) 0%, transparent 30%, transparent 48%, rgba(0,0,0,0.62) 100%)',
-          }} />
+          <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(180deg,rgba(0,0,0,0.16)_0%,transparent_30%,transparent_48%,rgba(0,0,0,0.62)_100%)]" />
 
           {project.award && (
-            <div style={{
-              position: 'absolute', top: 20, left: 20, zIndex: 3,
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '6px 10px', borderRadius: 2,
-              background: 'color-mix(in oklab, var(--bg-0) 70%, transparent)',
-              backdropFilter: 'blur(8px)', border: '1px solid var(--border-strong)',
-            }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: project.award.tier === 'SOTD' ? 'var(--accent)' : 'var(--highlight)' }} />
-              <span className="mono" style={{ color: 'var(--fg-0)', fontSize: 10 }}>{project.award.label}</span>
+            <div className="absolute top-5 left-5 z-[3] flex items-center gap-2 px-[10px] py-[6px] rounded-[2px] backdrop-blur-[8px] border border-(--border-strong) bg-[color-mix(in_oklab,var(--bg-0)_70%,transparent)]">
+              <span
+                className="size-2 rounded-full"
+                style={{ background: project.award.tier === 'SOTD' ? 'var(--accent)' : 'var(--highlight)' }}
+              />
+              <span className="mono text-(--fg-0) text-[10px]">{project.award.label}</span>
             </div>
           )}
 
           {/* hover stack chips */}
-          <div style={{
-            position: 'absolute', top: 20, right: 20, zIndex: 3,
-            display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end',
-            opacity: hover ? 1 : 0,
-            transform: hover ? 'translateY(0)' : 'translateY(-6px)',
-            transition: 'all 280ms cubic-bezier(0.2,0.7,0.2,1)',
-          }}>
+          <div
+            className={`absolute top-5 right-5 z-[3] flex flex-col gap-[6px] items-end transition-all duration-[280ms] ease-[cubic-bezier(0.2,0.7,0.2,1)] ${hover ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-[6px]'}`}
+          >
             {project.stack.slice(0, 3).map((s) => (
-              <span key={s} className="mono" style={{
-                padding: '4px 10px', borderRadius: 2,
-                background: 'color-mix(in oklab, var(--bg-0) 65%, transparent)',
-                backdropFilter: 'blur(8px)', border: '1px solid var(--border-strong)',
-                fontSize: 10, color: 'var(--fg-0)',
-              }}>{s}</span>
+              <span key={s} className="mono py-1 px-[10px] rounded-[2px] backdrop-blur-[8px] border border-(--border-strong) text-[10px] text-(--fg-0) bg-[color-mix(in_oklab,var(--bg-0)_65%,transparent)]">{s}</span>
             ))}
           </div>
 
           {/* title block */}
-          <div style={{
-            position: 'absolute', left: 28, right: 28, bottom: 26, zIndex: 3,
-            display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20,
-          }}>
+          <div className="absolute left-7 right-7 bottom-[26px] z-[3] flex items-end justify-between gap-5">
             <div>
-              <div className="mono" style={{ marginBottom: 10, color: '#fff', opacity: 0.72 }}>{project.year} · {project.role}</div>
-              <h3 style={{
-                fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 3.4vw, 56px)',
-                fontWeight: 500, letterSpacing: '-0.03em', lineHeight: 0.96, color: '#fff',
-              }}>{project.title}</h3>
+              <div className="mono mb-[10px] text-white opacity-[0.72]">{project.year} · {project.role}</div>
+              <h3 className="[font-family:var(--font-display)] text-[clamp(28px,3.4vw,56px)] font-medium tracking-[-0.03em] leading-[0.96] text-white">{project.title}</h3>
             </div>
-            <span aria-hidden="true" style={{
-              flexShrink: 0, width: 44, height: 44, borderRadius: '50%',
-              border: `1px solid ${hover ? 'var(--accent)' : 'rgba(255,255,255,0.5)'}`,
-              background: hover ? 'var(--accent)' : 'rgba(0,0,0,0.25)',
-              color: hover ? 'var(--bg-0)' : '#fff',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 240ms cubic-bezier(0.2,0.7,0.2,1)',
-              transform: hover ? 'rotate(0deg) scale(1.06)' : 'rotate(-12deg) scale(1)',
-            }}>
+            <span
+              aria-hidden="true"
+              className={`shrink-0 size-11 rounded-full flex items-center justify-center transition-all duration-[240ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]`}
+              style={{
+                border: `1px solid ${hover ? 'var(--accent)' : 'rgba(255,255,255,0.5)'}`,
+                background: hover ? 'var(--accent)' : 'rgba(0,0,0,0.25)',
+                color: hover ? 'var(--bg-0)' : '#fff',
+                transform: hover ? 'rotate(0deg) scale(1.06)' : 'rotate(-12deg) scale(1)',
+              }}
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M7 17L17 7M9 7h8v8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -166,9 +138,9 @@ function FloatingCard({ project, cfg, onOpen, register }: FloatingCardProps) {
         </div>
 
         {/* meta line below the tile */}
-        <div style={{ marginTop: 14, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 16 }}>
-          <span style={{ color: 'var(--fg-1)', fontSize: 14, minWidth: 0 }}>{project.subtitle}</span>
-          <span className="mono" style={{ color: hover ? 'var(--accent)' : 'var(--fg-3)', transition: 'color 220ms', whiteSpace: 'nowrap', flexShrink: 0 }}>{project.url} ↗</span>
+        <div className="mt-[14px] flex items-baseline justify-between gap-4">
+          <span className="text-(--fg-1) text-[14px] min-w-0">{project.subtitle}</span>
+          <span className={`mono whitespace-nowrap shrink-0 transition-colors duration-[220ms] ${hover ? 'text-(--accent)' : 'text-(--fg-3)'}`}>{project.url} ↗</span>
         </div>
       </article>
     </div>
@@ -180,7 +152,7 @@ interface ProjectsFloatingProps {
   onOpen: (p: Project) => void
 }
 
-export default function ProjectsFloating({ projects, onOpen }: ProjectsFloatingProps) {
+const ProjectsFloating = ({ projects, onOpen }: ProjectsFloatingProps) => {
   const cardsRef = useRef<(HTMLElement | null)[]>([])
   const stateRef = useRef<{ appear: number }[]>([])
 
@@ -249,20 +221,13 @@ export default function ProjectsFloating({ projects, onOpen }: ProjectsFloatingP
   }, [projects])
 
   return (
-    <div style={{ marginTop: 40 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, marginBottom: 8, flexWrap: 'wrap' }}>
+    <div className="mt-10">
+      <div className="flex items-center justify-between gap-6 mb-2 flex-wrap">
         <span className="mono">Scroll — the work drifts past. Click any card to open it.</span>
-        <span className="mono" style={{ color: 'var(--fg-3)' }}>{String(projects.length).padStart(2, '0')} projects</span>
+        <span className="mono text-(--fg-3)">{String(projects.length).padStart(2, '0')} projects</span>
       </div>
 
-      <div className="floating-stage" style={{
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'clamp(44px, 7vw, 104px)',
-        paddingTop: 56,
-        paddingBottom: 24,
-      }}>
+      <div className="floating-stage relative flex flex-col gap-[clamp(28px,7vw,104px)] pt-14 pb-6">
         {projects.map((p, i) => (
           <FloatingCard
             key={p.id}
@@ -276,3 +241,5 @@ export default function ProjectsFloating({ projects, onOpen }: ProjectsFloatingP
     </div>
   )
 }
+
+export default ProjectsFloating
