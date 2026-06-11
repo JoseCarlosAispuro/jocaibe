@@ -74,9 +74,10 @@ export default function Timeline({ data }: { data: TimelineData }) {
     <section id="timeline" className="py-(--s-section) relative">
       <div className="container">
         <SectionHeading
-          eyebrow={eyebrow}
-          titleMain={titleMain}
-          titleMuted={titleMuted}
+          lines={[
+            { text: titleMain },
+            ...(titleMuted ? [{ text: titleMuted, muted: true }] : []),
+          ]}
         />
 
         <div ref={wrapRef} className="relative mt-24">

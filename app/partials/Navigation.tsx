@@ -1,109 +1,139 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import {useState, useEffect} from 'react'
+import {useLenis} from 'lenis/react'
+import clsx from 'clsx'
+import { motion } from 'motion/react'
+import BrandWordmark from '@/app/brand/BrandWordmark'
+import Hamburger from "@/app/icons/Hamburger";
+import Close from "@/app/icons/Close";
+import Link from "next/link";
+
+const MotionLink = motion.create(Link)
 
 interface NavLink {
-  label: string
-  href: string
+    label: string
+    href: string
 }
 
 interface NavProps {
-  logo: string
-  links: NavLink[]
+    links: NavLink[]
+    email: string
 }
 
-export default function Navigation({ logo, links }: NavProps) {
-  const [scrolled, setScrolled] = useState(false)
+export default function Navigation({links, email}: NavProps) {
+    const [scrolled, setScrolled] = useState(false)
+    const [menuOpen, setMenuOpen] = useState(false)
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    // Lenis fires on every smoothed scroll tick
+    useLenis(({scroll}) => setScrolled(scroll > 24))
 
-  return (
-    <nav
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 50,
-        borderBottom: scrolled
-          ? '1px solid var(--border)'
-          : '1px solid transparent',
-        background: scrolled
-          ? 'color-mix(in oklab, var(--bg-0) 80%, transparent)'
-          : 'transparent',
-        backdropFilter: scrolled ? 'blur(12px)' : 'none',
-        transition: 'all 320ms cubic-bezier(0.2,0.7,0.2,1)',
-      }}
-    >
-      <div
-        className="container"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          height: 72,
-        }}
-      >
-        {/* Logo */}
-        <a
-          href="#hero"
-          style={{ display: 'flex', alignItems: 'center', gap: 10 }}
+    // Seed initial state (Lenis hasn't fired yet on mount)
+    useEffect(() => {
+        setScrolled(window.scrollY > 24)
+    }, [])
+
+    useEffect(() => {
+        document.body.style.overflow = menuOpen ? 'hidden' : ''
+        return () => {
+            document.body.style.overflow = ''
+        }
+    }, [menuOpen])
+
+    return (
+        <>
+            <nav
+                className={clsx(
+                    'fixed top-0 left-0 right-0 z-50 border-b border-transparent transition-all duration-[320ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]',
+                    {'nav-scrolled': scrolled},
+                )}
+            >
+                <div className="container flex items-center justify-between h-[72px]">
+                    <Link href="/" className="inline-flex items-center">
+                        <BrandWordmark fontSize={23} weight={500}/>
+                    </Link>
+
+                    <div className="flex items-center gap-8">
+                        {/* Desktop links */}
+                        <div className="nav-links flex gap-7">
+                            {links.map(({label, href}) => (
+                                <NavLink key={label} label={label} href={href}/>
+                            ))}
+                        </div>
+
+                        {/* Hamburger — mobile */}
+                        <button
+                            className="nav-burger w-11 h-11 rounded-full border border-(--border-strong) flex items-center justify-center text-(--fg-0)"
+                            aria-label="Open menu"
+                            onClick={() => setMenuOpen(true)}>
+                            <Hamburger/>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            {/* Mobile overlay */}
+            {menuOpen && (
+                <div
+                    className="fixed inset-0 z-[70] flex flex-col backdrop-blur-[10px]"
+                    style={{
+                        background: 'color-mix(in oklab, var(--bg-0) 98%, transparent)',
+                        padding: '20px var(--gutter) 40px',
+                    }}
+                >
+                    <div className="flex items-center justify-between h-[52px]">
+                        <BrandWordmark fontSize={23} weight={500}/>
+                        <button
+                            className="w-11 h-11 rounded-full border border-(--border-strong) flex items-center justify-center text-(--fg-0)"
+                            aria-label="Close menu"
+                            onClick={() => setMenuOpen(false)}>
+                            <Close/>
+                        </button>
+                    </div>
+
+                    <div className="flex-1 flex flex-col justify-center gap-1">
+                        {links.map(({label, href}, i) => (
+                            <Link
+                                key={label}
+                                href={href}
+                                onClick={() => setMenuOpen(false)}
+                                className="flex items-baseline gap-4 [font-family:var(--font-display)] [font-size:clamp(40px,13vw,64px)] font-medium tracking-[-0.03em] text-(--fg-0) py-[10px] border-b border-(--border)"
+                            >
+                                <span className="mono text-(--accent) text-[12px]">0{i + 1}</span>
+                                {label}
+                            </Link>
+                        ))}
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <Link
+                            href={`mailto:${email}`}
+                            onClick={() => setMenuOpen(false)}
+                            className="[font-family:var(--font-mono)] text-[13px] text-(--fg-1) tracking-[0.04em]"
+                        >
+                            {email} ↗
+                        </Link>
+                        <span className="mono inline-flex items-center gap-2">
+              <span className="size-[7px] rounded-full bg-(--success)"/>
+              Available for Q3 2026
+            </span>
+                    </div>
+                </div>
+            )}
+        </>
+    )
+}
+
+function NavLink({label, href}: NavLink) {
+    return (
+        <MotionLink
+            href={href}
+            className="[font-family:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase"
+            style={{ color: 'var(--fg-2)' }}
+            whileHover={{ color: 'var(--accent)' }}
+            transition={{ duration: 0.18 }}
         >
-          <span
-            style={{
-              display: 'inline-block',
-              width: 10,
-              height: 10,
-              borderRadius: 2,
-              background: 'var(--accent)',
-              boxShadow: '0 0 12px var(--accent)',
-            }}
-          />
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 13,
-              letterSpacing: '0.06em',
-              color: 'var(--fg-0)',
-            }}
-          >
-            {logo}
-          </span>
-        </a>
-
-        {/* Links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
-          {links.map(({ label, href }) => (
-            <NavLink key={label} label={label} href={href} />
-          ))}
-        </div>
-      </div>
-    </nav>
-  )
-}
-
-function NavLink({ label, href }: NavLink) {
-  const [hovered, setHovered] = useState(false)
-
-  return (
-    <a
-      href={href}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        fontFamily: 'var(--font-mono)',
-        fontSize: 12,
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase',
-        color: hovered ? 'var(--accent)' : 'var(--fg-2)',
-        transition: 'color 180ms',
-      }}
-    >
-      {label}
-    </a>
-  )
+            {label}
+        </MotionLink>
+    )
 }

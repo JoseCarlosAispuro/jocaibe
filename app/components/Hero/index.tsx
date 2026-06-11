@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { motion } from 'motion/react'
 import { initHeroShader } from '@/app/helpers/heroShader'
-import { useReveal } from '@/app/hooks/useReveal'
+import { reveal } from '@/app/hooks/useReveal'
+import { useMagnetic } from '@/app/hooks/useMagnetic'
 import KineticHeadline from './KineticHeadline'
-import RightArrow from "@/app/icons/RightArrow";
+import Button from '@/app/partials/Button'
 
 export interface HeroData {
   headline: {
@@ -14,8 +16,8 @@ export interface HeroData {
   }
   meta: string
   copy: {
-    before: string;
-    highlight: string;
+    before: string
+    highlight: string
     after: string
   }
   cta: { label: string; href: string }
@@ -28,15 +30,12 @@ interface HeroProps {
   availableLabel: string
 }
 
-const Hero = ({ data, available, availableLabel }: HeroProps) => {
-  const {headline, meta, copy, cta, scrollLabel} = {...data}
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
-
-  const pillRef   = useReveal(200)
-  const metaRef   = useReveal(100)
-  const h1Ref     = useReveal(200)
-  const subRef    = useReveal(380)
-  const scrollRef = useReveal(560)
+const Hero = ({ data }: HeroProps) => {
+  const { headline, meta, copy, cta, scrollLabel } = data
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const sectionRef = useRef<HTMLElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const { ref: magnetRef, style: magnetStyle } = useMagnetic(0.4)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -44,93 +43,112 @@ const Hero = ({ data, available, availableLabel }: HeroProps) => {
     return initHeroShader(canvas, { mode: 'constellation' })
   }, [])
 
+  // Mouse parallax: content drifts AWAY from cursor + idle organic float
+  useEffect(() => {
+    const sec = sectionRef.current
+    const content = contentRef.current
+    if (!sec || !content) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const head = content.querySelector<HTMLElement>('[data-parallax-head]')
+    let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0
+
+    const onMove = (e: MouseEvent) => {
+      const r = sec.getBoundingClientRect()
+      const nx = (e.clientX - r.left) / r.width - 0.5
+      const ny = (e.clientY - r.top) / r.height - 0.5
+      tx = -nx * 36
+      ty = -ny * 24
+    }
+    const onLeave = () => { tx = 0; ty = 0 }
+
+    const loop = (now: number) => {
+      cx += (tx - cx) * 0.07
+      cy += (ty - cy) * 0.07
+      const t = now * 0.001
+      const fx = Math.sin(t * 0.55) * 7 + Math.sin(t * 0.23) * 3
+      const fy = Math.cos(t * 0.48) * 6 + Math.sin(t * 0.31) * 3
+      content.style.transform = `translate3d(${(cx + fx).toFixed(2)}px, ${(cy + fy).toFixed(2)}px, 0)`
+      if (head) {
+        head.style.transform = `translate3d(${(cx * 0.5 + fx * 1.5).toFixed(2)}px, ${(cy * 0.5 + fy * 1.5).toFixed(2)}px, 0)`
+      }
+      raf = requestAnimationFrame(loop)
+    }
+
+    sec.addEventListener('mousemove', onMove)
+    sec.addEventListener('mouseleave', onLeave)
+    raf = requestAnimationFrame(loop)
+
+    return () => {
+      cancelAnimationFrame(raf)
+      sec.removeEventListener('mousemove', onMove)
+      sec.removeEventListener('mouseleave', onLeave)
+    }
+  }, [])
+
   return (
     <section
+      ref={sectionRef}
       id="hero"
-      className="relative min-h-screen overflow-hidden flex flex-col justify-center"
+      className="relative min-h-screen overflow-hidden flex flex-col justify-end"
+      style={{ paddingBottom: 'clamp(64px, 10vh, 120px)' }}
     >
       {/* Canvas background */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-0" />
 
-      {/* Status pill — top left */}
-      {available && (
-        <div className="container absolute top-24 inset-x-0 z-[2]">
-          <div
-            ref={pillRef as React.RefObject<HTMLDivElement>}
-            className="inline-flex items-center gap-2.5 border border-(--border) rounded-full backdrop-blur-[8px]"
-            style={{
-              padding: '8px 14px',
-              background: 'color-mix(in oklab, var(--bg-1) 60%, transparent)',
-            }}
-          >
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{
-                background: 'var(--success)',
-                ['--beat-glow' as string]: 'var(--success)',
-                animation: 'heartbeat 1.8s ease-in-out infinite',
-              }}
-            />
-            <span className="mono" style={{ color: 'var(--fg-1)' }}>
-              {availableLabel}
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* Main content */}
-      <div className="container relative z-[2]">
-
+      <div
+        ref={contentRef}
+        className="container relative z-[2] will-change-transform"
+      >
         {/* Meta line */}
-        <div
-          ref={metaRef as React.RefObject<HTMLDivElement>}
+        <motion.div
+          {...reveal(100)}
           className="flex justify-between gap-6 mb-8 flex-wrap"
         >
           <span className="mono">{meta}</span>
-        </div>
+        </motion.div>
 
-        {/* Kinetic headline */}
-        <div ref={h1Ref as React.RefObject<HTMLDivElement>}>
-          <KineticHeadline
-            line1={headline.line1}
-            line2Muted={headline.line2_muted}
-            line2Accent={headline.line2_accent}
-          />
-        </div>
+        {/* Kinetic headline — deeper parallax layer */}
+        <motion.div {...reveal(200)}>
+          <div data-parallax-head style={{ willChange: 'transform' }}>
+            <KineticHeadline
+              line1={headline.line1}
+              line2Muted={headline.line2_muted}
+              line2Accent={headline.line2_accent}
+            />
+          </div>
+        </motion.div>
 
         {/* Sub copy + CTA */}
-        <div
-          ref={subRef as React.RefObject<HTMLDivElement>}
+        <motion.div
+          {...reveal(380)}
           className="flex items-end justify-between gap-12 mt-12 flex-wrap"
         >
           <p className="text-[clamp(18px,1.6vw,22px)] leading-[1.5] max-w-[520px] text-(--fg-1) [text-wrap:pretty]">
             {copy.before}{' '}
-            <em style={{ color: 'var(--accent)', fontStyle: 'normal' }}>{copy.highlight}</em>{' '}
+            <em style={{ color: 'var(--accent)', fontStyle: 'normal' }}>
+              {copy.highlight}
+            </em>{' '}
             {copy.after}
           </p>
 
-          <a
-            href={cta.href}
-            className="inline-flex items-center gap-4 border border-(--fg-0) bg-(--fg-0) text-(--bg-0) rounded-full [font-family:var(--font-mono)] text-[13px] tracking-[0.06em] uppercase font-medium transition-[background,border-color] duration-[220ms] ease-[cubic-bezier(0.2,0.7,0.2,1)] hover:bg-(--accent) hover:border-(--accent) shrink-0"
-            style={{ padding: '18px 28px' }}
-          >
-            {cta.label}
-            <RightArrow/>
-          </a>
-        </div>
+          <motion.div ref={magnetRef as React.RefObject<HTMLDivElement>} style={magnetStyle} className="shrink-0">
+            <Button href={cta.href} label={cta.label} cursor="Go" />
+          </motion.div>
+        </motion.div>
 
         {/* Scroll indicator */}
-        <div
-          ref={scrollRef as React.RefObject<HTMLDivElement>}
+        <motion.div
+          {...reveal(560)}
           className="mt-24 flex items-center gap-3"
         >
           <div className="w-8 h-px bg-(--fg-3)" />
           <span className="mono">{scrollLabel}</span>
-        </div>
+        </motion.div>
       </div>
-
     </section>
   )
 }
 
-export default Hero;
+export default Hero

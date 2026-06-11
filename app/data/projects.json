@@ -1,0 +1,150 @@
+[
+  {
+    "id": "thickpickle",
+    "title": "Thick Pickle",
+    "subtitle": "Brand-first product site for a creative studio",
+    "year": "2024",
+    "role": "Lead Frontend Engineer",
+    "award": { "tier": "SOTD", "label": "Awwwards Site of the Day, 2024" },
+    "url": "thickpickle.com",
+    "stack": ["Next.js 14", "GSAP", "WebGL", "Sanity", "Vercel Edge"],
+    "tags": ["Awarded", "Agency"],
+    "impact": [
+      ["+38%", "time on page"],
+      ["0.04s", "INP, p75"],
+      ["98", "Lighthouse perf"]
+    ],
+    "summary": "Hand-tuned scroll choreography, custom WebGL transitions, and a content model that lets the studio update everything without touching code.",
+    "bg": "linear-gradient(135deg, oklch(0.42 0.18 142) 0%, oklch(0.28 0.12 158) 60%, oklch(0.18 0.06 164) 100%)",
+    "accentText": "#d9f04a",
+    "cover": "/projects/thickpickle-hero.png",
+    "shots": ["/projects/thickpickle-faq.png", "/projects/thickpickle-cart.png"]
+  },
+  {
+    "id": "wing",
+    "title": "Wing — Alphabet",
+    "subtitle": "Drone delivery marketing surfaces",
+    "year": "2025",
+    "role": "Senior Frontend (Strange Pixels)",
+    "award": null,
+    "url": "wing.com",
+    "stack": ["Next.js", "React Server Components", "Contentful"],
+    "tags": ["Enterprise"],
+    "impact": [
+      ["100", "CWV mobile"],
+      ["+12", "markets"],
+      ["WCAG AA", "compliant"]
+    ],
+    "summary": "Built localized landing surfaces for Wing across 12 markets. Strict performance budgets, a11y-first, ADA-compliant motion patterns.",
+    "bg": "linear-gradient(135deg, oklch(0.32 0.06 240) 0%, oklch(0.20 0.04 230) 60%, oklch(0.13 0.02 220) 100%)",
+    "accentText": "#5eead4",
+    "cover": "/projects/wing-drone.png",
+    "shots": ["/projects/wing-healthcare.png", "/projects/wing-detect.png"]
+  },
+  {
+    "id": "octaura",
+    "title": "Octaura",
+    "subtitle": "Headless commerce, financial UI",
+    "year": "2024",
+    "role": "Senior Frontend",
+    "award": null,
+    "url": "octaura.com",
+    "stack": ["Next.js", "Shopify SF API", "TypeScript"],
+    "tags": ["Commerce"],
+    "impact": [
+      ["+24%", "conversion"],
+      ["<200ms", "TTFB"],
+      ["12mo", "engagement"]
+    ],
+    "summary": "Headless Shopify Storefront with deep custom data layer. Built the design system, shipped 80+ pages, owned perf.",
+    "bg": "linear-gradient(135deg, oklch(0.30 0.10 280) 0%, oklch(0.20 0.06 290) 60%, oklch(0.13 0.03 300) 100%)",
+    "accentText": "#c084fc",
+    "cover": "/projects/octaura-hero.png",
+    "shots": ["/projects/octaura-navigate.png", "/projects/octaura-journey.png"]
+  },
+  {
+    "id": "swisher",
+    "title": "Swisher Blunts",
+    "subtitle": "Immersive multimedia brand experience",
+    "year": "2023",
+    "role": "Senior Frontend",
+    "award": null,
+    "url": "swisherblunts.com",
+    "stack": ["Next.js", "Framer Motion", "CSS Animations", "Video optimization"],
+    "tags": ["Lifestyle"],
+    "impact": [
+      ["18+", "age-gated flow"],
+      ["6", "flavor reveals"],
+      ["scroll", "video sequences"]
+    ],
+    "summary": "Scroll-driven video sequences, interactive audio, age gate flow, and animated flavor reveals. Built as a tactile, sensory brand site.",
+    "bg": "linear-gradient(135deg, oklch(0.38 0.16 60) 0%, oklch(0.26 0.10 40) 60%, oklch(0.16 0.05 30) 100%)",
+    "accentText": "#fbbf24",
+    "cover": "/projects/swisher-hero.png",
+    "shots": ["/projects/swisher-anatomy.png", "/projects/swisher-quote.png", "/projects/swisher-retailers.png"]
+  },
+  {
+    "id": "aerika",
+    "title": "Aerika Estate",
+    "subtitle": "Ultra-premium Napa Valley wine estate",
+    "year": "2024",
+    "role": "Senior Frontend",
+    "award": null,
+    "url": "aerikaestate.com",
+    "stack": ["Next.js", "Tailwind CSS", "Mobile-first", "Membership UX"],
+    "tags": ["Lifestyle"],
+    "impact": [
+      ["Mt. Veeder", "Napa Valley"],
+      ["Mobile-first", "pixel-perfect"],
+      ["Private", "membership UX"]
+    ],
+    "summary": "Pixel-perfect, mobile-first luxury site for a Mount Veeder estate. High-resolution media delivery, refined typography, and a private members' flow.",
+    "bg": "linear-gradient(135deg, oklch(0.30 0.06 90) 0%, oklch(0.22 0.04 80) 60%, oklch(0.14 0.02 70) 100%)",
+    "accentText": "#d4d4aa",
+    "cover": "/projects/aerika-hero.png",
+    "shots": ["/projects/aerika-members.png", "/projects/aerika-profile.png"]
+  },
+  {
+    "id": "appfire",
+    "title": "Appfire",
+    "subtitle": "Enterprise SaaS marketing at scale",
+    "year": "2025",
+    "role": "Senior Frontend",
+    "award": null,
+    "url": "appfire.com",
+    "stack": ["Next.js", "SEO", "Core Web Vitals", "Scalability"],
+    "tags": ["Enterprise"],
+    "impact": [
+      ["25,000+", "customers"],
+      ["55%+", "Fortune 500"],
+      ["CWV", "top-decile"]
+    ],
+    "summary": "Enterprise SaaS marketing site trusted by 25,000+ companies, including 55%+ of the Fortune 500. High-traffic, performance-tuned, SEO-led.",
+    "bg": "linear-gradient(135deg, oklch(0.34 0.10 30) 0%, oklch(0.24 0.07 25) 60%, oklch(0.15 0.04 20) 100%)",
+    "accentText": "#ff8a65",
+    "cover": "/projects/appfire-hero.png",
+    "shots": ["/projects/appfire-partners.png", "/projects/appfire-products.png"]
+  },
+  {
+    "id": "qrypt",
+    "title": "Qrypt",
+    "subtitle": "Quantum-secure encryption, NYC",
+    "year": "2025",
+    "role": "Senior Frontend",
+    "award": null,
+    "url": "qrypt.com",
+    "stack": ["WordPress", "Information architecture", "Technical UX", "Developer portal"],
+    "tags": ["Deep Tech"],
+    "impact": [
+      ["Quantum", "entropy"],
+      ["SDK", "docs portal"],
+      ["Deep IA", "technical"]
+    ],
+    "summary": "Quantum-secure encryption startup. Complex information architecture for deep technical content — quantum entropy, key generation, SDK documentation.",
+    "bg": "linear-gradient(135deg, #0a0a0d 0%, #111114 60%, #06060a 100%)",
+    "accentText": "#5eead4",
+    "cover": "/projects/qrypt-hero.png",
+    "shots": ["/projects/qrypt-keys.png", "/projects/qrypt-solutions.png"],
+    "dark": true
+  }
+]

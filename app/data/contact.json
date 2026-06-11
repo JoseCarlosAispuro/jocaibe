@@ -1,0 +1,14 @@
+{
+  "eyebrow": "Get in touch",
+  "headline": "Got a brief",
+  "headlineAccent": "worth",
+  "headlineEnd": "crafting?",
+  "email": "contact@jocaibe.co",
+  "emailNote": "Best for project intros, briefs, and creative-lead conversations. I'll respond within 24 hours.",
+  "links": [
+    { "label": "LinkedIn", "value": "linkedin.com/in/jc-aispuro-beltran", "href": "#" },
+    { "label": "Location", "value": "México · GMT-7", "href": null }
+  ],
+  "footer": "© 2026 José Carlos Aispuro Beltrán",
+  "footerStack": "Built with Next.js · Tailwind · Three.js"
+}

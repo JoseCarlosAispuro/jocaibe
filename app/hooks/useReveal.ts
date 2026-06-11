@@ -1,45 +1,13 @@
-import { useRef, useEffect, useLayoutEffect } from 'react'
-import { useLenis } from 'lenis/react'
-
-interface RevealOpts {
-  threshold?: number
-}
-
-export function useReveal(delay = 0, opts: RevealOpts = {}) {
-  const ref = useRef<HTMLElement>(null)
-  const firedRef = useRef(false)
-  const threshold = opts.threshold ?? 0.85
-
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-    el.classList.add('reveal-from')
-  }, [])
-
-  const trigger = () => {
-    if (firedRef.current) return
-    const el = ref.current
-    if (!el) return
-    const { top, height } = el.getBoundingClientRect()
-    if (height === 0) return
-    const vh = window.innerHeight || document.documentElement.clientHeight
-    if (top > vh * threshold) return
-
-    firedRef.current = true
-    el.classList.remove('reveal-from')
-    if (delay) el.style.animationDelay = `${delay}ms`
-    el.classList.add('reveal-on')
+// Not a hook — returns Motion props to spread onto motion.* elements
+export function reveal(delay = 0) {
+  return {
+    initial: { opacity: 0, y: 24 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true },
+    transition: {
+      duration: 0.56,
+      ease: [0.2, 0.7, 0.2, 1] as [number, number, number, number],
+      delay: delay / 1000,
+    },
   }
-
-  // Lenis fires on every smoothed scroll tick
-  useLenis(trigger)
-
-  useEffect(() => {
-    // Seed initial check and handle resize
-    trigger()
-    window.addEventListener('resize', trigger, { passive: true })
-    return () => window.removeEventListener('resize', trigger)
-  }, [])
-
-  return ref
 }
