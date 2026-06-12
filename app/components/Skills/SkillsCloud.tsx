@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
+import { useViewport } from '@/app/hooks/useViewport'
 
 interface SkillGroup {
   cat: string
@@ -13,11 +14,10 @@ interface SpringEl extends HTMLElement {
 
 const SkillsCloud = ({ groups }: { groups: SkillGroup[] }) => {
   const chipRefs = useRef<(HTMLSpanElement | null)[]>([])
+  const { fine, hover, reduce } = useViewport()
 
   useEffect(() => {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches
-    if (reduced || !fine) return
+    if (reduce || !fine || !hover) return
 
     let mx = -9999, my = -9999, raf = 0
     const radius = 175
@@ -71,7 +71,7 @@ const SkillsCloud = ({ groups }: { groups: SkillGroup[] }) => {
       cancelAnimationFrame(raf)
       window.removeEventListener('mousemove', onMove)
     }
-  }, [])
+  }, [fine, hover, reduce])
 
   const offsets: number[] = []
   let acc = 0
@@ -101,7 +101,7 @@ const SkillsCloud = ({ groups }: { groups: SkillGroup[] }) => {
                   ref={(el) => {
                     chipRefs.current[offsets[gi] + i] = el
                   }}
-                  className="rounded-full border border-(--border) bg-(--bg-1) text-(--fg-1) [font-family:var(--font-display)] font-normal tracking-[-0.01em] will-change-transform whitespace-nowrap px-[18px] py-3 text-[clamp(14px,1.2vw,17px)]"
+                  className="rounded-full border border-(--border) bg-(--bg-1) text-(--fg-1) font-(--font-display) font-normal tracking-[-0.01em] will-change-transform whitespace-nowrap px-[18px] py-3 text-[clamp(14px,1.2vw,17px)]"
                 >
                   {it}
                 </span>

@@ -31,7 +31,7 @@ const Projects = ({ data }: { data: ProjectsData }) => {
           <span className="mono">More on request — case studies, deeper dives, full client list</span>
           <a
             href="#contact"
-            className="text-(--accent) [font-family:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase border-b border-(--accent) pb-[2px]"
+            className="text-(--accent) font-(--font-mono) text-[12px] tracking-[0.08em] uppercase border-b border-(--accent) pb-[2px]"
           >
             Reach out →
           </a>

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'motion/react'
-import { reveal } from '@/app/hooks/useReveal'
+import Reveal from '@/app/partials/Reveal'
 
 const HEARTBEAT_SCALE = [1, 1.45, 1, 1.28, 1, 1]
 const HEARTBEAT_TIMES = [0, 0.11, 0.22, 0.33, 0.45, 1]
@@ -18,10 +18,7 @@ const TimelineCurrent = ({
   registerDot: (el: HTMLSpanElement | null) => void
 }) => {
   return (
-    <motion.div
-      {...reveal(200)}
-      className="grid pt-12 relative [grid-template-columns:clamp(40px,8vw,72px)_1fr] gap-[clamp(24px,4vw,64px)]"
-    >
+    <Reveal delay={200} className="grid pt-12 relative [grid-template-columns:clamp(40px,8vw,72px)_1fr] gap-[clamp(24px,4vw,64px)]">
       <div className="relative">
         <motion.span
           ref={registerDot}
@@ -50,9 +47,9 @@ const TimelineCurrent = ({
       </div>
       <div>
         <div className="mono text-(--accent)">{period}</div>
-        <div className="text-[20px] [font-family:var(--font-display)] text-(--fg-0) mt-1">{label}</div>
+        <div className="text-[20px] font-(--font-display) text-(--fg-0) mt-1">{label}</div>
       </div>
-    </motion.div>
+    </Reveal>
   )
 }
 

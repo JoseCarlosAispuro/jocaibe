@@ -1,14 +1,13 @@
 import { useRef } from 'react'
+import { useViewport } from './useViewport'
 
 export const useTilt = (max = 7) => {
   const ref = useRef<HTMLDivElement>(null)
+  const { fine, hover, reduce } = useViewport()
 
   const onMouseMove = (e: React.MouseEvent) => {
     const el = ref.current
-    if (!el) return
-    const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!fine || reduced) return
+    if (!el || !fine || !hover || reduce) return
     const r = el.getBoundingClientRect()
     const px = (e.clientX - r.left) / r.width
     const py = (e.clientY - r.top) / r.height

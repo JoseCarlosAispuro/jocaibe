@@ -79,7 +79,7 @@ const SkillsCallout = () => {
             <div className="mono mb-2 text-(--accent)">
               Currently learning in production
             </div>
-            <h3 className="[font-family:var(--font-display)] text-[clamp(24px,3vw,36px)] font-medium tracking-[-0.02em] leading-[1.15] text-(--fg-0)">
+            <h3 className="font-(--font-display) text-[clamp(24px,3vw,36px)] font-medium tracking-[-0.02em] leading-[1.15] text-(--fg-0)">
               AI-augmented frontend.
               <br />
               <span className="text-(--fg-2)">

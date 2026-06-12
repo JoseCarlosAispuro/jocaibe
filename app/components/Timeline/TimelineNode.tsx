@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'motion/react'
-import { reveal } from '@/app/hooks/useReveal'
+import Reveal from '@/app/partials/Reveal'
 import { Role } from './index'
 
 const TimelineNode = ({
@@ -16,8 +16,8 @@ const TimelineNode = ({
   registerDot: (el: HTMLSpanElement | null) => void
 }) => {
   return (
-    <motion.div
-      {...reveal(idx * 120)}
+    <Reveal
+      delay={idx * 120}
       className="grid gap-[clamp(24px,4vw,64px)] pt-12 pb-12 border-b border-(--border) relative [grid-template-columns:clamp(40px,8vw,72px)_1fr]"
     >
       {/* Node dot */}
@@ -40,7 +40,7 @@ const TimelineNode = ({
         {/* Left col — meta */}
         <div className="col-span-4">
           <div className="mono text-(--accent) mb-2">{role.period}</div>
-          <h3 className="[font-family:var(--font-display)] [font-size:var(--fs-h3)] font-semibold tracking-[-0.02em] leading-[1.15] text-(--fg-0)">
+          <h3 className="font-(--font-display) [font-size:var(--fs-h3)] font-semibold tracking-[-0.02em] leading-[1.15] text-(--fg-0)">
             {role.company}
           </h3>
           <div className="text-[14px] text-(--fg-2) mt-1">{role.role}</div>
@@ -71,7 +71,7 @@ const TimelineNode = ({
           ))}
         </div>
       </div>
-    </motion.div>
+    </Reveal>
   )
 }
 

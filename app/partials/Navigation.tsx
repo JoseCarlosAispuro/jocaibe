@@ -25,7 +25,7 @@ const NavLink = ({label, href}: NavLinkItem) => {
     return (
         <MotionLink
             href={href}
-            className="[font-family:var(--font-mono)] text-[12px] tracking-[0.08em] uppercase"
+            className="font-(--font-mono) text-[12px] tracking-[0.08em] uppercase"
             initial={{ color: 'var(--fg-2)' }}
             whileHover={{ color: 'var(--accent)' }}
             transition={{ duration: 0.18 }}
@@ -64,7 +64,7 @@ const Navigation = ({links, email}: NavProps) => {
             >
                 <div className="container mx-auto px-(--gutter) flex items-center justify-between h-[72px]">
                     <Link href="/" className="inline-flex items-center">
-                        <BrandWordmark fontSize={23} weight={500}/>
+                        <BrandWordmark />
                     </Link>
 
                     <div className="flex items-center gap-8">
@@ -92,7 +92,7 @@ const Navigation = ({links, email}: NavProps) => {
                     className="fixed inset-0 z-[70] flex flex-col backdrop-blur-[10px] pt-5 px-(--gutter) pb-10 bg-[color-mix(in_oklab,var(--bg-0)_98%,transparent)]"
                 >
                     <div className="flex items-center justify-between h-[52px]">
-                        <BrandWordmark fontSize={23} weight={500}/>
+                        <BrandWordmark />
                         <button
                             className="w-11 h-11 rounded-full border border-(--border-strong) flex items-center justify-center text-(--fg-0)"
                             aria-label="Close menu"
@@ -107,7 +107,7 @@ const Navigation = ({links, email}: NavProps) => {
                                 key={label}
                                 href={href}
                                 onClick={() => setMenuOpen(false)}
-                                className="flex items-baseline gap-4 [font-family:var(--font-display)] [font-size:clamp(40px,13vw,64px)] font-medium tracking-[-0.03em] text-(--fg-0) py-[10px] border-b border-(--border)"
+                                className="flex items-baseline gap-4 font-(--font-display) text-[clamp(40px,13vw,64px)] font-medium tracking-[-0.03em] text-(--fg-0) py-[10px] border-b border-(--border)"
                             >
                                 <span className="mono text-(--accent) text-[12px]">0{i + 1}</span>
                                 {label}
@@ -119,7 +119,7 @@ const Navigation = ({links, email}: NavProps) => {
                         <Link
                             href={`mailto:${email}`}
                             onClick={() => setMenuOpen(false)}
-                            className="[font-family:var(--font-mono)] text-[13px] text-(--fg-1) tracking-[0.04em]"
+                            className="font-(--font-mono) text-[13px] text-(--fg-1) tracking-[0.04em]"
                         >
                             {email} ↗
                         </Link>

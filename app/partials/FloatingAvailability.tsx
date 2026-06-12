@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { useLenis } from 'lenis/react'
+import { useViewport } from '@/app/hooks/useViewport'
 
 const HEARTBEAT_SCALE = [1, 1.45, 1, 1.28, 1, 1]
 const HEARTBEAT_TIMES = [0, 0.11, 0.22, 0.33, 0.45, 1]
@@ -13,6 +14,7 @@ const FloatingAvailability = () => {
   const hovRef = useRef(false)
   const closeT = useRef<ReturnType<typeof setTimeout> | null>(null)
   const velRef = useRef(0)
+  const { reduce } = useViewport()
 
   // Feed Lenis velocity into the rotation badge — smoothed scroll, no jank
   useLenis(({ velocity }) => {
@@ -22,7 +24,6 @@ const FloatingAvailability = () => {
 
   useEffect(() => {
     let angle = 0, raf = 0
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     const loop = () => {
       const idle = hovRef.current ? 0.95 : 0.22
@@ -37,7 +38,7 @@ const FloatingAvailability = () => {
       raf = requestAnimationFrame(loop)
     }
     return () => cancelAnimationFrame(raf)
-  }, [])
+  }, [reduce])
 
   const open = () => {
     if (closeT.current) clearTimeout(closeT.current)
@@ -99,7 +100,7 @@ const FloatingAvailability = () => {
               Available now
             </span>
           </div>
-          <div className="[font-family:var(--font-display)] text-[21px] font-medium tracking-[-0.02em] leading-[1.22] text-(--fg-0)">
+          <div className="font-(--font-display) text-[21px] font-medium tracking-[-0.02em] leading-[1.22] text-(--fg-0)">
             Ready to start your next build — let&rsquo;s make something worth
             shipping.
           </div>
@@ -144,7 +145,7 @@ const FloatingAvailability = () => {
               />
             </defs>
             <motion.text
-              className="[font-family:var(--font-mono)] text-[8px] tracking-[0.12em]"
+              className="font-(--font-mono) text-[8px] tracking-[0.12em]"
               animate={{ fill: hover ? 'var(--accent)' : 'var(--fg-2)' }}
               transition={{ duration: 0.3 }}
             >

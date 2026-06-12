@@ -1,16 +1,16 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
+import { useViewport } from '@/app/hooks/useViewport'
 
 const CursorFX = () => {
   const dotRef = useRef<HTMLDivElement>(null)
   const ringRef = useRef<HTMLDivElement>(null)
   const labelRef = useRef<HTMLSpanElement>(null)
+  const { fine, hover, reduce } = useViewport()
 
   useEffect(() => {
-    const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!fine || reduced) return
+    if (!fine || !hover || reduce) return
 
     document.body.classList.add('has-custom-cursor')
 
@@ -72,7 +72,7 @@ const CursorFX = () => {
       document.removeEventListener('mouseleave', onLeave)
       document.removeEventListener('mouseenter', onEnter)
     }
-  }, [])
+  }, [fine, hover, reduce])
 
   return (
     <>

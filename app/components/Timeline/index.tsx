@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLenis } from 'lenis/react'
+import { useViewport } from '@/app/hooks/useViewport'
 import SectionHeading from '@/app/partials/SectionHeading'
 import TimelineCurrent from './TimelineCurrent';
 import TimelineNode from "./TimelineNode";
@@ -30,6 +31,7 @@ export interface TimelineData {
 const Timeline = ({ data }: { data: TimelineData }) => {
   const {eyebrow, titleMain, titleMuted, roles, current, } = {...data}
 
+  const { vh } = useViewport()
   const wrapRef = useRef<HTMLDivElement>(null)
   const fillRef = useRef<HTMLDivElement>(null)
   const headRef = useRef<HTMLSpanElement>(null)
@@ -64,11 +66,8 @@ const Timeline = ({ data }: { data: TimelineData }) => {
 
   useLenis(update)
 
-  useEffect(() => {
-    update()
-    window.addEventListener('resize', update, { passive: true })
-    return () => window.removeEventListener('resize', update)
-  }, [update])
+  useEffect(() => { update() }, [update])
+  useEffect(() => { update() }, [vh, update])
 
   return (
     <section id="timeline" className="py-(--s-section) relative">

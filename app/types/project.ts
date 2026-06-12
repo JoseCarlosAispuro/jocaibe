@@ -18,6 +18,8 @@ export interface Project {
   bg: string
   accentText: string
   cover?: string
+  video?: string
   shots?: string[]
+  links?: Array<{ label: string; url: string }>
   dark?: boolean
 }

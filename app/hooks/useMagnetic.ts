@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react'
 import { useMotionValue, useSpring } from 'motion/react'
+import { useViewport } from './useViewport'
 
 export const useMagnetic = (strength = 0.35) => {
   const ref = useRef<HTMLElement>(null)
@@ -7,12 +8,11 @@ export const useMagnetic = (strength = 0.35) => {
   const my = useMotionValue(0)
   const x = useSpring(mx, { stiffness: 120, damping: 18, mass: 0.8 })
   const y = useSpring(my, { stiffness: 120, damping: 18, mass: 0.8 })
+  const { fine, hover, reduce } = useViewport()
 
   useEffect(() => {
     const el = ref.current
-    if (!el) return
-    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (!el || !fine || !hover || reduce) return
 
     const onMove = (e: MouseEvent) => {
       const r = el.getBoundingClientRect()
@@ -30,7 +30,7 @@ export const useMagnetic = (strength = 0.35) => {
       el.removeEventListener('mousemove', onMove)
       el.removeEventListener('mouseleave', onLeave)
     }
-  }, [strength, mx, my])
+  }, [strength, mx, my, fine, hover, reduce])
 
   return { ref, style: { x, y } }
 }

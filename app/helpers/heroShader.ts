@@ -19,15 +19,22 @@ const DIM    = 0.18
 const PULL   = 22
 const ACCENT: [number, number, number] = [217, 240, 74]
 
+// Pre-computed constant — all non-glowing dots share this color every frame
+const DIM_COLOR = `rgba(255,255,255,${DIM})`
+
 export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
   const ctx = canvas.getContext('2d', { alpha: true })!
   const dpr = Math.min(window.devicePixelRatio || 1, 2)
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   let w = 0, h = 0, raf = 0
+  let visible = true
   const t0 = performance.now()
   let px = -9999, py = -9999, tx = -9999, ty = -9999, active = false
+  // Cached canvas offset — updated on resize, avoids getBoundingClientRect() per mouse event
+  let canvasLeft = 0, canvasTop = 0
   let dots: Dot[] = []
+  let vignette: CanvasGradient | null = null
 
   const build = () => {
     dots = []
@@ -54,16 +61,22 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
     const rect = canvas.getBoundingClientRect()
     w = rect.width
     h = rect.height
+    // Cache offset so setPointer never needs to call getBoundingClientRect()
+    canvasLeft = rect.left
+    canvasTop  = rect.top
     canvas.width  = Math.floor(w * dpr)
     canvas.height = Math.floor(h * dpr)
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    // Rebuild cached vignette whenever dimensions change
+    vignette = ctx.createRadialGradient(w / 2, h / 2, h * 0.25, w / 2, h / 2, h * 0.9)
+    vignette.addColorStop(0, 'rgba(0,0,0,0)')
+    vignette.addColorStop(1, 'rgba(14,15,16,0.82)')
     build()
   }
 
   const setPointer = (cx: number, cy: number) => {
-    const r = canvas.getBoundingClientRect()
-    tx = cx - r.left
-    ty = cy - r.top
+    tx = cx - canvasLeft
+    ty = cy - canvasTop
     active = true
   }
 
@@ -79,8 +92,9 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
     ctx.clearRect(0, 0, w, h)
 
     const r2 = RADIUS * RADIUS
-    const lit: Dot[] = []
+    const litDots: Dot[] = []
 
+    // Pass 1 — update all dot positions and glow values
     for (let k = 0; k < dots.length; k++) {
       const d = dots[k]
       const ax = reduce ? 0 : Math.sin(time * d.sp + d.ph) * d.amp
@@ -104,49 +118,66 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
       d.glow += (target - d.glow) * 0.14
       d.x = homeX
       d.y = homeY
+      if (d.glow > 0.04) litDots.push(d)
+    }
+
+    // Pass 2 — halos for lit dots (drawn before dots so they sit underneath)
+    for (let i = 0; i < litDots.length; i++) {
+      const d = litDots[i]
       const g = d.glow
-      const size = 1.1 + g * 3.2
-      const baseA = DIM + g * (1 - DIM) * 0.92
-
-      if (g > 0.04) {
-        const hr = size * (3 + g * 5)
-        const grad = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, hr)
-        grad.addColorStop(0, `rgba(${ACCENT[0]},${ACCENT[1]},${ACCENT[2]},${0.28 * g})`)
-        grad.addColorStop(1, `rgba(${ACCENT[0]},${ACCENT[1]},${ACCENT[2]},0)`)
-        ctx.fillStyle = grad
-        ctx.beginPath()
-        ctx.arc(d.x, d.y, hr, 0, Math.PI * 2)
-        ctx.fill()
-        lit.push(d)
-      }
-
-      const cr = Math.round(255 + (ACCENT[0] - 255) * g)
-      const cg = Math.round(255 + (ACCENT[1] - 255) * g)
-      const cb = Math.round(255 + (ACCENT[2] - 255) * g)
-      ctx.fillStyle = `rgba(${cr},${cg},${cb},${baseA})`
+      const hr = (1.1 + g * 3.2) * (3 + g * 5)
+      const grad = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, hr)
+      grad.addColorStop(0, `rgba(${ACCENT[0]},${ACCENT[1]},${ACCENT[2]},${(0.28 * g).toFixed(3)})`)
+      grad.addColorStop(1, `rgba(${ACCENT[0]},${ACCENT[1]},${ACCENT[2]},0)`)
+      ctx.fillStyle = grad
       ctx.beginPath()
-      ctx.arc(d.x, d.y, size, 0, Math.PI * 2)
+      ctx.arc(d.x, d.y, hr, 0, Math.PI * 2)
       ctx.fill()
     }
 
-    // Lines between lit dots within constellation range
-    if (lit.length > 1) {
+    // Pass 3 — batch all dim dots into a single path + fill (1 draw call vs ~960)
+    ctx.fillStyle = DIM_COLOR
+    ctx.beginPath()
+    for (let k = 0; k < dots.length; k++) {
+      const d = dots[k]
+      if (d.glow <= 0.04) {
+        ctx.moveTo(d.x + 1.1, d.y)
+        ctx.arc(d.x, d.y, 1.1, 0, Math.PI * 2)
+      }
+    }
+    ctx.fill()
+
+    // Pass 4 — individual fills for lit dots (accent-tinted, variable size)
+    for (let i = 0; i < litDots.length; i++) {
+      const d = litDots[i]
+      const g = d.glow
+      const cr = Math.round(255 + (ACCENT[0] - 255) * g)
+      const cg = Math.round(255 + (ACCENT[1] - 255) * g)
+      const cb = Math.round(255 + (ACCENT[2] - 255) * g)
+      ctx.fillStyle = `rgba(${cr},${cg},${cb},${(DIM + g * (1 - DIM) * 0.92).toFixed(3)})`
+      ctx.beginPath()
+      ctx.arc(d.x, d.y, 1.1 + g * 3.2, 0, Math.PI * 2)
+      ctx.fill()
+    }
+
+    // Pass 5 — lines between lit dots within constellation range
+    if (litDots.length > 1) {
       const maxLen = GAP * 1.9
       const maxLen2 = maxLen * maxLen
-      for (let a = 0; a < lit.length; a++) {
-        for (let b = a + 1; b < lit.length; b++) {
-          const dx = lit[a].x - lit[b].x
-          const dy = lit[a].y - lit[b].y
+      for (let a = 0; a < litDots.length; a++) {
+        for (let b = a + 1; b < litDots.length; b++) {
+          const dx = litDots[a].x - litDots[b].x
+          const dy = litDots[a].y - litDots[b].y
           const dist2 = dx * dx + dy * dy
           if (dist2 < maxLen2) {
             const closeness = 1 - Math.sqrt(dist2) / maxLen
-            const alpha = closeness * Math.min(lit[a].glow, lit[b].glow) * 0.5
+            const alpha = closeness * Math.min(litDots[a].glow, litDots[b].glow) * 0.5
             if (alpha > 0.01) {
-              ctx.strokeStyle = `rgba(${ACCENT[0]},${ACCENT[1]},${ACCENT[2]},${alpha})`
+              ctx.strokeStyle = `rgba(${ACCENT[0]},${ACCENT[1]},${ACCENT[2]},${alpha.toFixed(3)})`
               ctx.lineWidth = 1
               ctx.beginPath()
-              ctx.moveTo(lit[a].x, lit[a].y)
-              ctx.lineTo(lit[b].x, lit[b].y)
+              ctx.moveTo(litDots[a].x, litDots[a].y)
+              ctx.lineTo(litDots[b].x, litDots[b].y)
               ctx.stroke()
             }
           }
@@ -154,15 +185,19 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
       }
     }
 
-    // Radial vignette
-    const vg = ctx.createRadialGradient(w / 2, h / 2, h * 0.25, w / 2, h / 2, h * 0.9)
-    vg.addColorStop(0, 'rgba(0,0,0,0)')
-    vg.addColorStop(1, 'rgba(14,15,16,0.82)')
-    ctx.fillStyle = vg
-    ctx.fillRect(0, 0, w, h)
+    // Pass 6 — radial vignette (gradient cached on resize, 1 fillRect)
+    if (vignette) {
+      ctx.fillStyle = vignette
+      ctx.fillRect(0, 0, w, h)
+    }
 
-    raf = requestAnimationFrame(draw)
+    raf = visible ? requestAnimationFrame(draw) : 0
   }
+
+  const io = new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting
+    if (visible && raf === 0) raf = requestAnimationFrame(draw)
+  }, { threshold: 0 })
 
   resize()
   window.addEventListener('resize', resize)
@@ -170,10 +205,12 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
   window.addEventListener('touchmove', onTouch, { passive: true })
   window.addEventListener('touchstart', onTouch, { passive: true })
   canvas.addEventListener('mouseleave', onLeave)
+  io.observe(canvas)
   draw()
 
   return () => {
     cancelAnimationFrame(raf)
+    io.disconnect()
     window.removeEventListener('resize', resize)
     window.removeEventListener('mousemove', onMove)
     window.removeEventListener('touchmove', onTouch)

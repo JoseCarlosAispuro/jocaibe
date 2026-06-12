@@ -14,6 +14,7 @@ import Timeline from '@/app/components/Timeline'
 import Projects from '@/app/components/Projects'
 import Skills from '@/app/components/Skills'
 import Contact from '@/app/components/Contact'
+import Footer from "@/app/partials/Footer";
 
 const Home = () => {
   return (
@@ -31,6 +32,7 @@ const Home = () => {
         <Skills data={skillsData} />
         <Contact data={contactData} />
       </main>
+        <Footer/>
       <FloatingAvailability />
     </>
   )
