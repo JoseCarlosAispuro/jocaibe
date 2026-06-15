@@ -4,7 +4,6 @@ import { useRef, useEffect } from 'react'
 import { useViewport } from '@/app/hooks/useViewport'
 
 const CursorFX = () => {
-  const dotRef = useRef<HTMLDivElement>(null)
   const ringRef = useRef<HTMLDivElement>(null)
   const labelRef = useRef<HTMLSpanElement>(null)
   const { fine, hover, reduce } = useViewport()
@@ -21,9 +20,6 @@ const CursorFX = () => {
 
     const onMove = (e: MouseEvent) => {
       mx = e.clientX; my = e.clientY
-      if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`
-      }
       const hit = (e.target as Element).closest('[data-cursor]')
       if (hit) {
         tScale = 2.6
@@ -39,11 +35,9 @@ const CursorFX = () => {
     const onDown = () => ringRef.current?.classList.add('cur-down')
     const onUp = () => ringRef.current?.classList.remove('cur-down')
     const onLeave = () => {
-      if (dotRef.current) dotRef.current.style.opacity = '0'
       if (ringRef.current) ringRef.current.style.opacity = '0'
     }
     const onEnter = () => {
-      if (dotRef.current) dotRef.current.style.opacity = '1'
       if (ringRef.current) ringRef.current.style.opacity = '1'
     }
 
@@ -75,12 +69,9 @@ const CursorFX = () => {
   }, [fine, hover, reduce])
 
   return (
-    <>
-      <div ref={dotRef} className="cursor-dot" />
-      <div ref={ringRef} className="cursor-ring">
-        <span ref={labelRef} className="cursor-label" />
-      </div>
-    </>
+    <div ref={ringRef} className="cursor-ring">
+      <span ref={labelRef} className="cursor-label" />
+    </div>
   )
 }
 

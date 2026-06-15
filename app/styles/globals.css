@@ -172,13 +172,6 @@
 body.has-custom-cursor,
 body.has-custom-cursor * { cursor: none !important; }
 
-.cursor-dot {
-  position: fixed; top: 0; left: 0; z-index: 9999; pointer-events: none;
-  width: 10px; height: 10px; border-radius: 2px; background: var(--accent);
-  box-shadow: 0 0 12px 1px var(--accent);
-  opacity: 0; transition: opacity 200ms;
-}
-
 .cursor-ring {
   position: fixed; top: 0; left: 0; z-index: 9998; pointer-events: none;
   width: 34px; height: 34px; border-radius: 50%;
@@ -188,13 +181,12 @@ body.has-custom-cursor * { cursor: none !important; }
 }
 
 .cursor-ring.cur-active {
-  background: color-mix(in oklab, var(--accent) 16%, transparent);
+  background: var(--accent);
   border-color: var(--accent);
+  box-shadow: 0 6px 20px -4px rgba(0,0,0,0.45);
 }
 
-.cursor-ring.cur-down {
-  background: color-mix(in oklab, var(--accent) 32%, transparent);
-}
+.cursor-ring.cur-down { background: color-mix(in oklab, var(--accent) 80%, black); }
 
 .cursor-label {
   font-size: 9px;
@@ -206,8 +198,10 @@ body.has-custom-cursor * { cursor: none !important; }
   font-family: var(--font-mono);
 }
 
+.cursor-ring.cur-active .cursor-label { color: var(--bg-0); }
+
 @media (hover: none), (pointer: coarse) {
-  .cursor-dot, .cursor-ring { display: none; }
+  .cursor-ring { display: none; }
 }
 
 /* ── Navigation scrolled state ── */
@@ -215,6 +209,60 @@ body.has-custom-cursor * { cursor: none !important; }
   border-bottom-color: var(--border);
   background: color-mix(in oklab, var(--bg-0) 80%, transparent);
   backdrop-filter: blur(12px);
+}
+
+/* ── Scroll cue ── */
+.cue-label { font-size: 11px; letter-spacing: 0.32em; color: var(--fg-3); }
+
+.cue-mouse-body {
+  position: relative; width: 26px; height: 42px;
+  border: 1.5px solid var(--fg-3); border-radius: 14px;
+}
+
+.cue-wheel {
+  position: absolute; left: 50%; top: 8px; width: 3px; height: 7px;
+  margin-left: -1.5px; border-radius: 2px; background: var(--accent);
+  box-shadow: 0 0 8px 1px var(--accent);
+  animation: cueWheel 1.8s cubic-bezier(0.65,0,0.35,1) infinite;
+}
+
+@keyframes cueWheel {
+  0%   { transform: translateY(15px); opacity: 0; }
+  25%  { opacity: 1; }
+  75%  { opacity: 1; }
+  100% { transform: translateY(0);    opacity: 0; }
+}
+
+.cue-swipe-track { position: relative; width: 26px; height: 52px; }
+
+.cue-finger {
+  position: absolute; left: 50%; top: 0; width: 12px; height: 12px;
+  margin-left: -6px; border-radius: 50%; background: var(--accent);
+  box-shadow: 0 0 12px 2px var(--accent);
+  animation: cueSwipe 1.9s cubic-bezier(0.5,0,0.2,1) infinite;
+}
+
+.cue-chev {
+  position: absolute; left: 50%; top: 2px; width: 9px; height: 9px;
+  margin-left: -5px; border-right: 1.5px solid var(--fg-3);
+  border-bottom: 1.5px solid var(--fg-3); transform: rotate(225deg);
+}
+
+@keyframes cueSwipe {
+  0%   { transform: translateY(34px); opacity: 0; }
+  20%  { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { transform: translateY(0);    opacity: 0; }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .cue-mouse { display: none !important; }
+  .cue-swipe { display: flex !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cue-wheel { animation: none; opacity: 1; transform: translateY(7px); }
+  .cue-finger { animation: none; opacity: 1; transform: translateY(16px); }
 }
 
 /* ── Floating projects ── */
