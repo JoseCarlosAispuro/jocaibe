@@ -25,12 +25,13 @@ import { useViewport } from './useViewport'
 const useParallax = () => {
   const sectionRef = useRef<HTMLElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
-  const { reduce } = useViewport()
+  const { fine, reduce } = useViewport()
 
+  // ── Desktop: mouse parallax ───────────────────────────────────────────────
   useEffect(() => {
     const sec = sectionRef.current
     const content = contentRef.current
-    if (!sec || !content || reduce) return
+    if (!sec || !content || reduce || !fine) return
 
     const head = content.querySelector<HTMLElement>('[data-parallax-head]')
     let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0
@@ -39,13 +40,11 @@ const useParallax = () => {
       cx += (tx - cx) * 0.07
       cy += (ty - cy) * 0.07
 
-      // CSS `translate` stacks on top of the CSS float animation on `transform`
       content.style.setProperty('translate', `${cx.toFixed(2)}px ${cy.toFixed(2)}px`)
       if (head) {
         head.style.setProperty('translate', `${(cx * 0.5).toFixed(2)}px ${(cy * 0.5).toFixed(2)}px`)
       }
 
-      // Stop as soon as the lerp has converged — no idle 60fps burn
       if (Math.abs(cx - tx) < 0.15 && Math.abs(cy - ty) < 0.15) {
         raf = 0
       } else {
@@ -53,9 +52,7 @@ const useParallax = () => {
       }
     }
 
-    const startTick = () => {
-      if (raf === 0) raf = requestAnimationFrame(tick)
-    }
+    const startTick = () => { if (raf === 0) raf = requestAnimationFrame(tick) }
 
     const onMove = (e: MouseEvent) => {
       tx = -(e.clientX / window.innerWidth  - 0.5) * 36
@@ -63,7 +60,6 @@ const useParallax = () => {
       startTick()
     }
 
-    // On leave, lerp back to centre
     const onLeave = () => { tx = 0; ty = 0; startTick() }
 
     sec.addEventListener('mousemove', onMove)
@@ -76,7 +72,36 @@ const useParallax = () => {
       content.style.removeProperty('translate')
       if (head) head.style.removeProperty('translate')
     }
-  }, [reduce])
+  }, [fine, reduce])
+
+  // ── Mobile: auto-drift ───────────────────────────────────────────────────
+  useEffect(() => {
+    const content = contentRef.current
+    if (!content || reduce || fine) return
+
+    const head = content.querySelector<HTMLElement>('[data-parallax-head]')
+    let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0
+
+    const drift = (ts: number) => {
+      const t = ts / 1000
+      tx = Math.sin(t * 0.32) * 10
+      ty = Math.cos(t * 0.21) * 6
+      cx += (tx - cx) * 0.08
+      cy += (ty - cy) * 0.08
+      content.style.setProperty('translate', `${cx.toFixed(2)}px ${cy.toFixed(2)}px`)
+      if (head) {
+        head.style.setProperty('translate', `${(cx * 0.5).toFixed(2)}px ${(cy * 0.5).toFixed(2)}px`)
+      }
+      raf = requestAnimationFrame(drift)
+    }
+    raf = requestAnimationFrame(drift)
+
+    return () => {
+      cancelAnimationFrame(raf)
+      content.style.removeProperty('translate')
+      if (head) head.style.removeProperty('translate')
+    }
+  }, [fine, reduce])
 
   return { sectionRef, contentRef }
 }

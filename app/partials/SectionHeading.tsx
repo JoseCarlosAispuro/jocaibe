@@ -35,7 +35,7 @@ const HeadingLine = ({ text, muted, delay }: { text: string; muted?: boolean; de
 
 const SectionHeading = ({ lines, right }: SectionHeadingProps) => {
   return (
-    <div className="grid grid-cols-12 gap-8 items-baseline">
+    <div className="grid grid-cols-12 gap-4 md:gap-8 items-baseline">
       <h2 className="col-span-10 font-(--font-display) [font-size:var(--fs-h1)] font-medium tracking-[-0.03em] leading-none text-(--fg-0)">
         {lines.map((ln, i) => (
           <HeadingLine key={i} text={ln.text} muted={ln.muted} delay={i * 130} />

@@ -58,8 +58,8 @@ const SkillsCallout = () => {
           }}
         />
 
-        <div className="relative z-[1] grid grid-cols-12 gap-8 items-center">
-          <div className="col-span-1">
+        <div className="relative z-[1] grid grid-cols-[auto_1fr] md:grid-cols-12 gap-6 md:gap-8 items-center">
+          <div className="md:col-span-1">
             {/* Accent glow pulsing icon */}
             <motion.span
               animate={{
@@ -75,11 +75,11 @@ const SkillsCallout = () => {
               <span className="size-[14px] rounded-[3px] border-2 border-(--bg-0)" />
             </motion.span>
           </div>
-          <div className="col-span-8">
+          <div className="col-span-full md:col-span-8">
             <div className="mono mb-2 text-(--accent)">
               Currently learning in production
             </div>
-            <h3 className="font-(--font-display) text-[clamp(24px,3vw,36px)] font-medium tracking-[-0.02em] leading-[1.15] text-(--fg-0)">
+            <h3 className="font-(--font-display) text-[clamp(20px,3vw,36px)] font-medium tracking-[-0.02em] leading-[1.15] text-(--fg-0)">
               AI-augmented frontend.
               <br />
               <span className="text-(--fg-2)">
@@ -87,7 +87,7 @@ const SkillsCallout = () => {
               </span>
             </h3>
           </div>
-          <div className="col-span-3 flex flex-wrap gap-[6px] justify-end">
+          <div className="col-span-full md:col-span-3 flex flex-wrap gap-[6px] md:justify-end">
             {['Claude Code', 'Opencode', 'MCP', 'Agent eval'].map((t) => (
               <CalloutTag key={t} label={t} />
             ))}

@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { assetUrl } from '@/app/lib/assets'
+import VideoEl from './VideoEl'
 import type { Project } from '@/app/types/project'
+import RightArrow from '@/app/icons/RightArrow'
 
 interface FloatingCardProps {
   project: Project
@@ -12,45 +14,42 @@ interface FloatingCardProps {
   register: (el: HTMLElement | null) => void
 }
 
+// No useState — all hover effects are driven by CSS group-hover: so React
+// never re-renders this component during animation, eliminating the main
+// source of forced reflows that were stalling the RAF loop.
 const FloatingCard = ({ project, w, ratio, lane, onOpen, register }: FloatingCardProps) => {
-  const [hover, setHover] = useState(false)
-  const isDark = project.dark
+  const isDark    = project.dark
+  const hasMedia  = !!(project.cover || project.video)
 
   return (
     <div className={`flex ${lane === 'start' ? 'justify-start' : 'justify-end'} max-md:justify-center`}>
       <article
         data-cursor="View"
-        className="floating-card max-md:!w-full cursor-pointer"
+        role="button"
+        tabIndex={0}
+        aria-label={`View ${project.title} project`}
+        className="group floating-card max-md:!w-full cursor-pointer"
         ref={register}
         onClick={() => onOpen(project)}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(project) } }}
         style={{ width: w }}
       >
         <div
-          className={`relative overflow-hidden rounded-lg ${isDark ? 'border border-(--border-strong)' : 'border border-(--border)'} transition-shadow duration-[360ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]`}
-          style={{
-            aspectRatio: ratio,
-            background: project.bg,
-            boxShadow: hover
-              ? '0 60px 110px -34px rgba(0,0,0,0.78)'
-              : '0 34px 70px -38px rgba(0,0,0,0.62)',
-          }}
+          className={`relative overflow-hidden rounded-lg ${isDark ? 'border border-(--border-strong)' : 'border border-(--border)'} transition-shadow duration-[360ms] ease-[cubic-bezier(0.2,0.7,0.2,1)] shadow-[0_34px_70px_-38px_rgba(0,0,0,0.62)] group-hover:shadow-[0_60px_110px_-34px_rgba(0,0,0,0.78)]`}
+          style={{ aspectRatio: ratio, background: project.bg }}
         >
           {/* Background media */}
           {project.video ? (
-            <video
-              autoPlay muted loop playsInline
-              className="absolute inset-0 w-full h-full object-cover"
+            <VideoEl
               src={project.video}
+              className="absolute inset-0 w-full h-full object-cover"
             />
           ) : project.cover ? (
             <img
-              src={project.cover}
+              src={assetUrl(project.cover)}
               alt={project.title}
               loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-[700ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]"
-              style={{ transform: hover ? 'scale(1.04)' : 'scale(1)' }}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-[700ms] ease-[cubic-bezier(0.2,0.7,0.2,1)] group-hover:scale-[1.04]"
             />
           ) : (
             <>
@@ -70,24 +69,17 @@ const FloatingCard = ({ project, w, ratio, lane, onOpen, register }: FloatingCar
             </>
           )}
 
-          {/* Legibility scrim — only on real media */}
-          {(project.cover || project.video) && (
+          {/* Legibility scrim — media only, hover only (always on mobile) */}
+          {hasMedia && (
             <div
-              className="absolute inset-0 pointer-events-none"
-              style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.18) 0%, transparent 32%, transparent 55%, rgba(0,0,0,0.55) 100%)' }}
+              className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-[360ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]"
+              style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.18) 0%, transparent 10%, transparent 60%, rgba(0,0,0,1) 100%)' }}
             />
           )}
 
-          {/* Award badge — hover only, frosted glass */}
+          {/* Award badge — hover only, always on mobile */}
           {project.award && (
-            <div
-              className="absolute top-5 left-5 z-[3] flex items-center gap-2 px-[10px] py-[6px] rounded-[2px] backdrop-blur-[8px] border border-(--border-strong) transition-[opacity,transform] duration-[280ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]"
-              style={{
-                background: 'color-mix(in oklab, var(--bg-0) 70%, transparent)',
-                opacity: hover ? 1 : 0,
-                transform: hover ? 'translateY(0)' : 'translateY(-6px)',
-              }}
-            >
+            <div className="frosted-glass absolute top-5 left-5 z-[3] flex items-center gap-2 px-[10px] py-[6px] rounded-[2px] backdrop-blur-[8px] border border-(--border-strong) opacity-0 -translate-y-[6px] group-hover:opacity-100 group-hover:translate-y-0 max-md:opacity-100 max-md:translate-y-0 transition-[opacity,transform] duration-[280ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]">
               <span
                 className="size-2 rounded-full shrink-0"
                 style={{ background: project.award.tier === 'SOTD' ? 'var(--accent)' : 'var(--highlight, var(--accent))' }}
@@ -96,41 +88,28 @@ const FloatingCard = ({ project, w, ratio, lane, onOpen, register }: FloatingCar
             </div>
           )}
 
-          {/* Stack chips — hover only, frosted glass */}
-          <div
-            className="absolute top-5 right-5 z-[3] flex flex-col gap-[6px] items-end transition-[opacity,transform] duration-[280ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]"
-            style={{
-              opacity: hover ? 1 : 0,
-              transform: hover ? 'translateY(0)' : 'translateY(-6px)',
-            }}
-          >
+          {/* Stack chips — hover only on desktop, hidden on mobile for clarity */}
+          <div className="absolute top-5 right-5 z-[3] flex-col gap-[6px] items-end hidden md:flex opacity-0 -translate-y-[6px] group-hover:opacity-100 group-hover:translate-y-0 transition-[opacity,transform] duration-[280ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]">
             {project.stack.slice(0, 3).map((s) => (
               <span
                 key={s}
-                className="mono py-1 px-[10px] rounded-[2px] backdrop-blur-[8px] border border-(--border-strong) text-[10px] text-(--fg-0)"
-                style={{ background: 'color-mix(in oklab, var(--bg-0) 70%, transparent)' }}
+                className="frosted-glass mono py-1 px-[10px] rounded-[2px] backdrop-blur-[8px] border border-(--border-strong) text-[10px] text-(--fg-0)"
               >
                 {s}
               </span>
             ))}
           </div>
 
-          {/* Title + meta block — hidden initially, revealed on hover */}
-          <div
-            className="absolute left-7 right-7 bottom-[26px] z-[3] flex items-end justify-between gap-5 transition-[opacity,transform] duration-[320ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]"
-            style={{
-              opacity: hover ? 1 : 0,
-              transform: hover ? 'translateY(0)' : 'translateY(14px)',
-            }}
-          >
+          {/* Title + meta block — hover on desktop, always on mobile */}
+          <div className="absolute left-5 right-5 bottom-5 md:left-7 md:right-7 md:bottom-[26px] z-[3] flex items-end justify-between gap-5 opacity-0 translate-y-[14px] group-hover:opacity-100 group-hover:translate-y-0 max-md:opacity-100 max-md:translate-y-0 transition-[opacity,transform] duration-[320ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]">
             <div>
               <div className="mono mb-[10px] text-(--accent) text-[11px]">{project.year} · {project.role}</div>
               <h3
-                className="font-(--font-display) text-[clamp(28px,3.4vw,56px)] font-medium tracking-[-0.03em] leading-[0.96]"
+                className="font-(--font-display) text-[clamp(22px,3.4vw,56px)] font-medium tracking-[-0.03em] leading-[0.96]"
                 style={{
-                  color: (project.cover || project.video) ? '#fff' : 'var(--fg-0)',
-                  mixBlendMode: (project.cover || project.video) ? 'normal' : 'difference',
-                  textShadow: (project.cover || project.video) ? '0 2px 20px rgba(0,0,0,0.5)' : 'none',
+                  color: hasMedia ? '#fff' : 'var(--fg-0)',
+                  mixBlendMode: hasMedia ? 'normal' : 'difference',
+                  textShadow: hasMedia ? '0 2px 20px rgba(0,0,0,0.5)' : 'none',
                 }}
               >
                 {project.title}
@@ -138,25 +117,17 @@ const FloatingCard = ({ project, w, ratio, lane, onOpen, register }: FloatingCar
             </div>
             <span
               aria-hidden="true"
-              className="shrink-0 size-11 rounded-full flex items-center justify-center border border-white/40 bg-black/30 text-white"
+              className="flex shrink-0 items-center justify-center size-9 rounded-full border border-white/40 bg-black/30 text-white md:size-11"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M7 17L17 7M9 7h8v8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <RightArrow size={14} />
             </span>
           </div>
         </div>
 
-        {/* Meta line below tile — hidden at rest, revealed on hover */}
-        <div
-          className="mt-[14px] flex items-baseline justify-between gap-4 transition-[opacity,transform] duration-[300ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]"
-          style={{
-            opacity: hover ? 1 : 0,
-            transform: hover ? 'translateY(0)' : 'translateY(-6px)',
-          }}
-        >
-          <span className="text-(--fg-1) text-[14px] min-w-0">{project.subtitle}</span>
-          <span className="mono whitespace-nowrap shrink-0" style={{ color: hover ? 'var(--accent)' : 'var(--fg-3)' }}>
+        {/* Meta line below tile — hover on desktop, always on mobile */}
+        <div className="mt-[10px] md:mt-[14px] flex items-baseline justify-between gap-4 opacity-0 -translate-y-[6px] group-hover:opacity-100 group-hover:translate-y-0 max-md:opacity-100 max-md:translate-y-0 transition-[opacity,transform] duration-[300ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]">
+          <span className="text-(--fg-1) text-[13px] md:text-[14px] min-w-0">{project.subtitle}</span>
+          <span className="mono whitespace-nowrap shrink-0 text-(--fg-3) group-hover:text-(--accent) transition-colors duration-[220ms]">
             {project.url}
           </span>
         </div>

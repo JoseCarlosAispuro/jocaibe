@@ -1,45 +1,132 @@
 [
   {
+    "id": "lookingglass",
+    "title": "Lookingglass Theatre",
+    "subtitle": "Ensemble theatre company, Chicago",
+    "year": "2026",
+    "role": "Senior Frontend",
+    "award": null,
+    "url": "lookingglasstheatre.org",
+    "stack": [
+      "WordPress",
+      "PHP",
+      "CSS Animations",
+      "Custom Calendar Integration"
+    ],
+    "tags": [
+      "Culture"
+    ],
+    "impact": [
+      [
+        "Full site",
+        "build"
+      ],
+      [
+        "Drag",
+        "productions carousel"
+      ],
+      [
+        "Calendar",
+        "play events"
+      ]
+    ],
+    "summary": "A full site build for one of Chicago's most iconic ensemble theatre companies. I worked across the whole thing — WordPress CMS, scroll-driven animations, and a drag carousel for the productions. The most interesting challenge was integrating a full calendar system that could surface the right events contextually for each individual play, keeping complex scheduling logic from leaking into the user experience.",
+    "bg": "linear-gradient(135deg, oklch(0.20 0.08 320) 0%, oklch(0.14 0.05 310) 60%, oklch(0.09 0.02 300) 100%)",
+    "accentText": "#f0abfc",
+    "video": "/projects/lookingglass-hero.webm",
+    "shots": [
+      "/projects/lookingglass-full-site.webm",
+      "/projects/lookingglass-calendar.webm",
+      "/projects/lookingglass-water.webm"
+    ]
+  },
+  {
+    "id": "wing",
+    "title": "Wing",
+    "subtitle": "Drone delivery marketing surfaces",
+    "year": "2025",
+    "role": "Senior Frontend",
+    "award": null,
+    "url": "wing.com",
+    "stack": [
+      "Framer",
+      "React Custom Components",
+      "Timed Animations",
+      "PNG Sequences"
+    ],
+    "tags": [
+      "Enterprise"
+    ],
+    "impact": [
+      [
+        "100",
+        "CWV mobile"
+      ],
+      [
+        "+12",
+        "markets"
+      ],
+      [
+        "WCAG AA",
+        "compliant"
+      ]
+    ],
+    "summary": "I built this one from scratch in Framer, contributing across most of the site. The most interesting challenge was a custom PNG sequence system — binding frame-by-frame image sequences to component state so animations could respond dynamically to interaction, not just play on loop.",
+    "bg": "linear-gradient(135deg, oklch(0.32 0.06 240) 0%, oklch(0.20 0.04 230) 60%, oklch(0.13 0.02 220) 100%)",
+    "accentText": "#5eead4",
+    "video": "/projects/wing-demo.webm",
+    "shots": [
+      "/projects/wing-demo-2.webm",
+      "/projects/wing-demo-3.webm",
+      "/projects/wing-drone.webp",
+      "/projects/wing-healthcare.webp",
+      "/projects/wing-detect.webp"
+    ]
+  },
+  {
     "id": "thickpickle",
     "title": "Thick Pickle",
     "subtitle": "Brand-first product site for a creative studio",
     "year": "2024",
-    "role": "Lead Frontend Engineer",
-    "award": { "tier": "SOTD", "label": "Awwwards Site of the Day, 2024" },
+    "role": "Senior Frontend",
+    "award": {
+      "tier": "SOTD",
+      "label": "Awwwards Site of the Day, 2024"
+    },
     "url": "thickpickle.com",
-    "stack": ["Next.js 14", "GSAP", "WebGL", "Sanity", "Vercel Edge"],
-    "tags": ["Awarded", "Agency"],
-    "impact": [
-      ["+38%", "time on page"],
-      ["0.04s", "INP, p75"],
-      ["98", "Lighthouse perf"]
+    "stack": [
+      "Vue",
+      "GSAP",
+      "WebGL",
+      "Shopify",
+      "Vercel Edge"
     ],
-    "summary": "Hand-tuned scroll choreography, custom WebGL transitions, and a content model that lets the studio update everything without touching code.",
+    "tags": [
+      "Awarded",
+      "Agency"
+    ],
+    "impact": [
+      [
+        "+38%",
+        "time on page"
+      ],
+      [
+        "0.04s",
+        "INP, p75"
+      ],
+      [
+        "98",
+        "Lighthouse perf"
+      ]
+    ],
+    "summary": "A creative studio site that already looked great — my job was to wire it to life. I handled the full Shopify integration: cart logic, product selection, and all the commerce flows, making sure the transactional layer felt as polished as the visual design.",
     "bg": "linear-gradient(135deg, oklch(0.42 0.18 142) 0%, oklch(0.28 0.12 158) 60%, oklch(0.18 0.06 164) 100%)",
     "accentText": "#d9f04a",
-    "cover": "/projects/thickpickle-hero.png",
-    "shots": ["/projects/thickpickle-faq.png", "/projects/thickpickle-cart.png"]
-  },
-  {
-    "id": "wing",
-    "title": "Wing — Alphabet",
-    "subtitle": "Drone delivery marketing surfaces",
-    "year": "2025",
-    "role": "Senior Frontend (Strange Pixels)",
-    "award": null,
-    "url": "wing.com",
-    "stack": ["Next.js", "React Server Components", "Contentful"],
-    "tags": ["Enterprise"],
-    "impact": [
-      ["100", "CWV mobile"],
-      ["+12", "markets"],
-      ["WCAG AA", "compliant"]
-    ],
-    "summary": "Built localized landing surfaces for Wing across 12 markets. Strict performance budgets, a11y-first, ADA-compliant motion patterns.",
-    "bg": "linear-gradient(135deg, oklch(0.32 0.06 240) 0%, oklch(0.20 0.04 230) 60%, oklch(0.13 0.02 220) 100%)",
-    "accentText": "#5eead4",
-    "cover": "/projects/wing-drone.png",
-    "shots": ["/projects/wing-healthcare.png", "/projects/wing-detect.png"]
+    "video": "/projects/thickpickle-hero.webm",
+    "shots": [
+      "/projects/thickpickle-cart.webm",
+      "/projects/thickpickle-page-scroll.webm"
+    ]
   },
   {
     "id": "octaura",
@@ -49,39 +136,81 @@
     "role": "Senior Frontend",
     "award": null,
     "url": "octaura.com",
-    "stack": ["Next.js", "Shopify SF API", "TypeScript"],
-    "tags": ["Commerce"],
-    "impact": [
-      ["+24%", "conversion"],
-      ["<200ms", "TTFB"],
-      ["12mo", "engagement"]
+    "stack": [
+      "Next.js",
+      "Headless Wordpress",
+      "TypeScript"
     ],
-    "summary": "Headless Shopify Storefront with deep custom data layer. Built the design system, shipped 80+ pages, owned perf.",
+    "tags": [
+      "Commerce"
+    ],
+    "impact": [
+      [
+        "+24%",
+        "conversion"
+      ],
+      [
+        "<200ms",
+        "TTFB"
+      ],
+      [
+        "12mo",
+        "engagement"
+      ]
+    ],
+    "summary": "A headless financial platform where the design language lived in motion. I was responsible for the scroll-bound animations throughout the site — sequences that had to feel precise and intentional, not decorative, given the enterprise audience.",
     "bg": "linear-gradient(135deg, oklch(0.30 0.10 280) 0%, oklch(0.20 0.06 290) 60%, oklch(0.13 0.03 300) 100%)",
     "accentText": "#c084fc",
-    "cover": "/projects/octaura-hero.png",
-    "shots": ["/projects/octaura-navigate.png", "/projects/octaura-journey.png"]
+    "video": "/projects/octaura-demo.webm",
+    "shots": [
+      "/projects/octaura-journey.webp",
+      "/projects/octaura-demo-2.webm",
+      "/projects/octaura-hero.webp",
+      "/projects/octaura-navigate.webp"
+    ]
   },
   {
     "id": "swisher",
     "title": "Swisher Blunts",
     "subtitle": "Immersive multimedia brand experience",
-    "year": "2023",
+    "year": "2024",
     "role": "Senior Frontend",
     "award": null,
     "url": "swisherblunts.com",
-    "stack": ["Next.js", "Framer Motion", "CSS Animations", "Video optimization"],
-    "tags": ["Lifestyle"],
-    "impact": [
-      ["18+", "age-gated flow"],
-      ["6", "flavor reveals"],
-      ["scroll", "video sequences"]
+    "stack": [
+      "Next.js",
+      "Framer Motion",
+      "CSS Animations",
+      "Video optimization"
     ],
-    "summary": "Scroll-driven video sequences, interactive audio, age gate flow, and animated flavor reveals. Built as a tactile, sensory brand site.",
+    "tags": [
+      "Lifestyle"
+    ],
+    "impact": [
+      [
+        "18+",
+        "age-gated flow"
+      ],
+      [
+        "6",
+        "flavor reveals"
+      ],
+      [
+        "scroll",
+        "video sequences"
+      ]
+    ],
+    "summary": "A brand experience built to feel tactile. I worked on scroll-driven video sequences, flavor reveal animations, an interactive audio layer, and the age-gate flow — all of it choreographed to make the site feel more like a product than a page.",
     "bg": "linear-gradient(135deg, oklch(0.38 0.16 60) 0%, oklch(0.26 0.10 40) 60%, oklch(0.16 0.05 30) 100%)",
     "accentText": "#fbbf24",
-    "cover": "/projects/swisher-hero.png",
-    "shots": ["/projects/swisher-anatomy.png", "/projects/swisher-quote.png", "/projects/swisher-retailers.png"]
+    "video": "/projects/swisher-demo.webm",
+    "shots": [
+      "/projects/swisher-demo-2.webm",
+      "/projects/swisher-hero.webp",
+      "/projects/swisher-anatomy.webp",
+      "/projects/swisher-quote.webp",
+      "/projects/swisher-retailers.webp"
+    ]
   },
   {
     "id": "aerika",
@@ -91,60 +220,164 @@
     "role": "Senior Frontend",
     "award": null,
     "url": "aerikaestate.com",
-    "stack": ["Next.js", "Tailwind CSS", "Mobile-first", "Membership UX"],
-    "tags": ["Lifestyle"],
-    "impact": [
-      ["Mt. Veeder", "Napa Valley"],
-      ["Mobile-first", "pixel-perfect"],
-      ["Private", "membership UX"]
+    "stack": [
+      "Wordpress",
+      "Commerce 7",
+      "PHP",
+      "Membership UX"
     ],
-    "summary": "Pixel-perfect, mobile-first luxury site for a Mount Veeder estate. High-resolution media delivery, refined typography, and a private members' flow.",
+    "tags": [
+      "Lifestyle"
+    ],
+    "impact": [
+      [
+        "Mt. Veeder",
+        "Napa Valley"
+      ],
+      [
+        "Mobile-first",
+        "pixel-perfect"
+      ],
+      [
+        "Private",
+        "membership UX"
+      ]
+    ],
+    "summary": "A luxury wine estate site where every detail had to feel considered. I built it pixel-perfect and mobile-first on WordPress with Commerce 7, including a private membership flow that needed to match the refinement of the brand itself.",
     "bg": "linear-gradient(135deg, oklch(0.30 0.06 90) 0%, oklch(0.22 0.04 80) 60%, oklch(0.14 0.02 70) 100%)",
     "accentText": "#d4d4aa",
-    "cover": "/projects/aerika-hero.png",
-    "shots": ["/projects/aerika-members.png", "/projects/aerika-profile.png"]
+    "cover": "/projects/aerika-hero.webp",
+    "shots": [
+      "/projects/aerika-members.webp",
+      "/projects/aerika-profile.webp"
+    ]
   },
   {
     "id": "appfire",
     "title": "Appfire",
     "subtitle": "Enterprise SaaS marketing at scale",
-    "year": "2025",
+    "year": "2023",
     "role": "Senior Frontend",
     "award": null,
     "url": "appfire.com",
-    "stack": ["Next.js", "SEO", "Core Web Vitals", "Scalability"],
-    "tags": ["Enterprise"],
-    "impact": [
-      ["25,000+", "customers"],
-      ["55%+", "Fortune 500"],
-      ["CWV", "top-decile"]
+    "stack": [
+      "Next.js",
+      "GraphQL",
+      "Strapi",
+      "Typesense"
     ],
-    "summary": "Enterprise SaaS marketing site trusted by 25,000+ companies, including 55%+ of the Fortune 500. High-traffic, performance-tuned, SEO-led.",
+    "tags": [
+      "Enterprise"
+    ],
+    "impact": [
+      [
+        "25,000+",
+        "customers"
+      ],
+      [
+        "55%+",
+        "Fortune 500"
+      ],
+      [
+        "CWV",
+        "top-decile"
+      ]
+    ],
+    "summary": "Enterprise scale, real performance pressure. This site serves 25,000+ customers and a majority of the Fortune 500. I worked across almost all the animations and interactions on the site, and also handled the configuration and mapping for the Typesense search integration — keeping everything sharp on a Next.js + GraphQL stack while staying top-decile on Core Web Vitals.",
     "bg": "linear-gradient(135deg, oklch(0.34 0.10 30) 0%, oklch(0.24 0.07 25) 60%, oklch(0.15 0.04 20) 100%)",
     "accentText": "#ff8a65",
-    "cover": "/projects/appfire-hero.png",
-    "shots": ["/projects/appfire-partners.png", "/projects/appfire-products.png"]
+    "video": "/projects/appfire-demo.webm",
+    "shots": [
+      "/projects/appfire-demo-2.webm",
+      "/projects/appfire-hero.webp",
+      "/projects/appfire-partners.webp",
+      "/projects/appfire-products.webp"
+    ]
   },
   {
     "id": "qrypt",
     "title": "Qrypt",
     "subtitle": "Quantum-secure encryption, NYC",
-    "year": "2025",
+    "year": "2023",
     "role": "Senior Frontend",
     "award": null,
     "url": "qrypt.com",
-    "stack": ["WordPress", "Information architecture", "Technical UX", "Developer portal"],
-    "tags": ["Deep Tech"],
-    "impact": [
-      ["Quantum", "entropy"],
-      ["SDK", "docs portal"],
-      ["Deep IA", "technical"]
+    "stack": [
+      "WordPress",
+      "WebGL",
+      "GreenSock",
+      "Three.js"
     ],
-    "summary": "Quantum-secure encryption startup. Complex information architecture for deep technical content — quantum entropy, key generation, SDK documentation.",
+    "tags": [
+      "Deep Tech"
+    ],
+    "impact": [
+      [
+        "Quantum",
+        "entropy"
+      ],
+      [
+        "SDK",
+        "docs portal"
+      ],
+      [
+        "Deep IA",
+        "technical"
+      ]
+    ],
+    "summary": "My focus was the homepage — building it as an experience rather than a page. I combined scroll, WebGL, and Three.js into a single cohesive animation that gives weight to what quantum encryption actually feels like, not just what it is.",
     "bg": "linear-gradient(135deg, #0a0a0d 0%, #111114 60%, #06060a 100%)",
     "accentText": "#5eead4",
-    "cover": "/projects/qrypt-hero.png",
-    "shots": ["/projects/qrypt-keys.png", "/projects/qrypt-solutions.png"],
+    "video": "/projects/qrypt-demo.webm",
+    "shots": [
+      "/projects/qrypt-hero.webp",
+      "/projects/qrypt-keys.webp",
+      "/projects/qrypt-solutions.webp"
+    ],
     "dark": true
+  },
+  {
+    "id": "justwomenssports",
+    "title": "Just Women's Sports",
+    "subtitle": "Women's sports media & live scores platform",
+    "year": "2022",
+    "role": "Senior Frontend",
+    "award": null,
+    "url": "justwomenssports.com",
+    "stack": [
+      "WordPress",
+      "PHP",
+      "Real-time Data",
+      "CSS Animations"
+    ],
+    "tags": [
+      "Media",
+      "Sports"
+    ],
+    "impact": [
+      [
+        "Multi-league",
+        "live scores"
+      ],
+      [
+        "Real-time",
+        "sports data"
+      ],
+      [
+        "High-traffic",
+        "performance"
+      ]
+    ],
+    "summary": "A full site build for one of the leading women's sports media platforms. I worked across the whole stack — WordPress CMS, animations, and performance — but the most technically demanding part was building the scores and schedules system. Pulling and displaying real-time data across multiple leagues (WNBA, NWSL, USWNT, WTA and more) while keeping the site fast under heavy traffic was the core challenge. High content volume, live data, and performance all had to coexist.",
+    "bg": "linear-gradient(135deg, oklch(0.22 0.10 300) 0%, oklch(0.16 0.07 290) 60%, oklch(0.10 0.03 280) 100%)",
+    "accentText": "#e879f9",
+    "cover": "/projects/jws-hero.webp",
+    "shots": [
+      "/projects/jws-hero.webp",
+      "/projects/jws-detail.webp",
+      "/projects/jws-league.webp",
+      "/projects/jws-reads.webp",
+      "/projects/jws-ss.webp"
+    ]
   }
 ]

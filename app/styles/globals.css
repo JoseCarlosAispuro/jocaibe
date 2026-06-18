@@ -97,12 +97,13 @@
     scroll-behavior: smooth;
     background: var(--bg-0);
     color: var(--fg-0);
+    overflow-x: clip;
   }
 
   body {
     line-height: 1.55;
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow-x: clip;
     font-size: var(--fs-body);
     font-family: var(--font-body);
     -moz-osx-font-smoothing: grayscale;
@@ -160,7 +161,6 @@
    ============================================================ */
 
 .mono {
-  color: var(--fg-3);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-size: var(--fs-mono-ui);
@@ -212,6 +212,19 @@ body.has-custom-cursor * { cursor: none !important; }
 }
 
 /* ── Scroll cue ── */
+.scroll-cue {
+  animation: cueEnter 600ms cubic-bezier(0.2,0.7,0.2,1) 1400ms both;
+}
+
+@keyframes cueEnter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue { animation: none; }
+}
+
 .cue-label { font-size: 11px; letter-spacing: 0.32em; color: var(--fg-3); }
 
 .cue-mouse-body {
@@ -264,6 +277,9 @@ body.has-custom-cursor * { cursor: none !important; }
   .cue-wheel { animation: none; opacity: 1; transform: translateY(7px); }
   .cue-finger { animation: none; opacity: 1; transform: translateY(16px); }
 }
+
+/* ── Frosted glass utility — used by floating card badges / chips ── */
+.frosted-glass { background: color-mix(in oklab, var(--bg-0) 70%, transparent); }
 
 /* ── Floating projects ── */
 .floating-card { opacity: 0; will-change: transform, opacity; }

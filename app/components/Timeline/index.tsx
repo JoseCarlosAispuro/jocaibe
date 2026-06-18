@@ -2,10 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLenis } from 'lenis/react'
+import { motion, AnimatePresence } from 'motion/react'
 import { useViewport } from '@/app/hooks/useViewport'
 import SectionHeading from '@/app/partials/SectionHeading'
-import TimelineCurrent from './TimelineCurrent';
-import TimelineNode from "./TimelineNode";
+import { openContactModal } from '@/app/lib/contactModal'
+import { EASE, HEARTBEAT_SCALE, HEARTBEAT_TIMES } from '@/app/lib/constants'
+import TimelineCurrent from './TimelineCurrent'
+import TimelineNode from './TimelineNode'
 
 export interface Role {
   company: string
@@ -22,37 +25,44 @@ export interface TimelineData {
   titleMuted: string
   roles: Role[]
   current: {
-    period: string;
+    period: string
     label: string
   }
 }
 
-// ── Index ─────────────────────────────────────────────────
-const Timeline = ({ data }: { data: TimelineData }) => {
-  const {eyebrow, titleMain, titleMuted, roles, current, } = {...data}
+// Stagger variants for mobile content entrance
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.04 } },
+}
+const itemVariants = {
+  hidden:   { opacity: 0, y: 16 },
+  visible:  { opacity: 1, y: 0, transition: { duration: 0.36, ease: EASE } },
+}
 
+const Timeline = ({ data }: { data: TimelineData }) => {
+  const { eyebrow, titleMain, titleMuted, roles, current } = { ...data }
   const { vh } = useViewport()
+  const total = roles.length + 1 // roles + current
+
+  // ── Desktop refs ─────────────────────────────────────────
   const wrapRef = useRef<HTMLDivElement>(null)
   const fillRef = useRef<HTMLDivElement>(null)
   const headRef = useRef<HTMLSpanElement>(null)
   const dotRefs = useRef<(HTMLSpanElement | null)[]>([])
   const [lit, setLit] = useState<boolean[]>([])
 
-  const update = useCallback(() => {
+  const desktopUpdate = useCallback(() => {
     const el = wrapRef.current
     if (!el || !fillRef.current) return
-
-    const rect = el.getBoundingClientRect()
-    const vh = window.innerHeight || document.documentElement.clientHeight
+    const rect  = el.getBoundingClientRect()
+    const vh    = window.innerHeight
     const start = vh * 0.78
-    const span = rect.height + start - vh * 0.4
-    const fill = Math.max(0, Math.min(1, (start - rect.top) / span)) * rect.height
+    const span  = rect.height + start - vh * 0.4
+    const fill  = Math.max(0, Math.min(1, (start - rect.top) / span)) * rect.height
 
     fillRef.current.style.height = Math.max(0, fill - 8) + 'px'
-
-    if (headRef.current) {
-      headRef.current.style.opacity = fill > 10 ? '1' : '0'
-    }
+    if (headRef.current) headRef.current.style.opacity = fill > 10 ? '1' : '0'
 
     const next = dotRefs.current.map((d) => {
       if (!d) return false
@@ -60,59 +70,242 @@ const Timeline = ({ data }: { data: TimelineData }) => {
       return (dr.top + dr.height / 2 - rect.top) <= fill + 2
     })
     setLit((prev) =>
-      prev.length === next.length && prev.every((v, i) => v === next[i]) ? prev : next
+      prev.length === next.length && prev.every((v, i) => v === next[i]) ? prev : next,
     )
   }, [])
 
-  useLenis(update)
+  // ── Mobile refs ──────────────────────────────────────────
+  const mobileSectionRef = useRef<HTMLDivElement>(null)
+  const mobileFillRef    = useRef<HTMLDivElement>(null)
+  const [activeIdx, setActiveIdx] = useState(0)
 
-  useEffect(() => { update() }, [update])
-  useEffect(() => { update() }, [vh, update])
+  // Scroll progress through the mobile section → active index.
+  // Section top reaching the viewport top = progress 0.
+  // Section bottom reaching the viewport bottom = progress 1.
+  const mobileUpdate = useCallback(() => {
+    const section = mobileSectionRef.current
+    if (!section) return
+    const rect        = section.getBoundingClientRect()
+    const scrolled    = Math.max(0, -rect.top)
+    const totalRoom   = Math.max(1, rect.height - window.innerHeight)
+    const progress    = Math.min(1, scrolled / totalRoom)
+    const idx         = Math.min(total - 1, Math.floor(progress * total))
+
+    setActiveIdx(idx)
+
+    if (mobileFillRef.current) {
+      const pct = total > 1 ? (idx / (total - 1)) * 100 : 100
+      mobileFillRef.current.style.width = `${pct}%`
+    }
+  }, [total])
+
+  useLenis(() => { desktopUpdate(); mobileUpdate() })
+  useEffect(() => { desktopUpdate(); mobileUpdate() }, [desktopUpdate, mobileUpdate])
+  useEffect(() => { desktopUpdate(); mobileUpdate() }, [vh, desktopUpdate, mobileUpdate])
 
   return (
-    <section id="timeline" className="py-(--s-section) relative">
-      <div className="container mx-auto px-(--gutter)">
-        <SectionHeading
-          lines={[
-            { text: titleMain },
-            ...(titleMuted ? [{ text: titleMuted, muted: true }] : []),
-          ]}
-        />
+    <section id="timeline" className="relative">
 
-        <div ref={wrapRef} className="relative mt-24">
-          {/* Track — dim background line */}
-          <div
-            className="absolute top-2 bottom-2 w-px bg-(--border-strong) left-[clamp(20px,4vw,36px)]"
-          />
+      {/* ══════════════════════════════════════════
+          MOBILE layout
+          — tall section for scroll binding
+          — heading + navigator + content all sticky
+         ══════════════════════════════════════════ */}
+      <div
+        ref={mobileSectionRef}
+        className="md:hidden"
+        style={{ minHeight: `calc(180px + ${total * 55}vh)` }}
+      >
+        {/* Sticky block — heading, navigator and content all stick together */}
+        <div className="sticky top-14 bg-(--bg-0) px-(--gutter) pt-8 pb-20">
 
-          {/* Fill — accent line that draws on scroll */}
-          <div
-            ref={fillRef}
-            className="absolute top-2 w-0.5 -ml-px left-[clamp(20px,4vw,36px)] h-0 bg-[linear-gradient(180deg,var(--accent),var(--accent-soft))] shadow-[0_0_12px_var(--accent)] transition-[height] duration-[600ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]"
-          >
-            {/* Glowing head */}
-            <span
-              ref={headRef}
-              className="absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2 w-[7px] h-[7px] rounded-full bg-(--accent) opacity-0 transition-opacity duration-200 shadow-[0_0_12px_3px_var(--accent)]"
+          {/* Section heading */}
+          <div className="mb-8">
+            <SectionHeading
+              lines={[
+                { text: titleMain },
+                ...(titleMuted ? [{ text: titleMuted, muted: true }] : []),
+              ]}
             />
           </div>
 
-          {roles.map((role, i) => (
-            <TimelineNode
-              key={role.company}
-              role={role}
-              idx={i}
-              lit={!!lit[i]}
-              registerDot={(el) => { dotRefs.current[i] = el }}
+          {/* Horizontal navigator — dots only, no labels */}
+          <div className="relative mb-10">
+            {/* Track */}
+            <div className="absolute left-0 right-0 top-[6px] h-px bg-(--border-strong)" />
+            {/* Fill */}
+            <div
+              ref={mobileFillRef}
+              className="absolute left-0 top-[6px] h-px w-0 bg-[linear-gradient(90deg,var(--accent),var(--accent-soft))] shadow-[0_0_8px_var(--accent)] transition-[width] duration-[420ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]"
             />
-          ))}
+            {/* Dots */}
+            <div className="relative flex justify-between">
+              {Array.from({ length: total }).map((_, i) => {
+                const isActive  = i === activeIdx
+                const isPast    = i < activeIdx
+                const isCurrent = i === total - 1
 
-          <TimelineCurrent
-            period={current.period}
-            label={current.label}
-            lit={!!lit[roles.length]}
-            registerDot={(el) => { dotRefs.current[roles.length] = el }}
+                return (
+                  <div key={i} className="flex items-center justify-center">
+                    {isCurrent ? (
+                      <motion.span
+                        animate={{ scale: 1, opacity: isActive || isPast ? 1 : 0.35 }}
+                        transition={{ duration: 0.32 }}
+                        className="w-3 h-3 rounded-full bg-(--accent)"
+                        style={{ boxShadow: isActive ? '0 0 10px 3px var(--accent)' : 'none' }}
+                      />
+                    ) : (
+                      <motion.span
+                        animate={{
+                          background: isActive || isPast ? 'var(--accent)' : 'var(--bg-0)',
+                          boxShadow: isActive
+                            ? '0 0 0 4px var(--bg-0), 0 0 12px var(--accent)'
+                            : '0 0 0 4px var(--bg-0)',
+                        }}
+                        transition={{ duration: 0.32, ease: EASE }}
+                        className="w-3 h-3 rounded-full border-2 border-(--accent)"
+                      />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Active content — children animate in sequence on entry */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeIdx}
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit={{ opacity: 0, y: -8, transition: { duration: 0.18, ease: EASE } }}
+            >
+              {activeIdx < roles.length ? (
+                (() => {
+                  const role = roles[activeIdx]
+                  return (
+                    <div className="text-center">
+                      <motion.div variants={itemVariants} className="mono text-(--accent) text-[11px] mb-3">
+                        {role.period}
+                      </motion.div>
+                      <motion.h3 variants={itemVariants} className="font-(--font-display) text-[clamp(36px,9vw,52px)] font-semibold tracking-[-0.03em] leading-[1.05] text-(--fg-0)">
+                        {role.company}
+                      </motion.h3>
+                      <motion.div variants={itemVariants} className="text-[14px] text-(--fg-2) mt-2">
+                        {role.role}
+                      </motion.div>
+                      <motion.div variants={itemVariants} className="mono text-(--fg-3) mt-1 text-[11px]">
+                        {role.location}
+                      </motion.div>
+
+                      <motion.ul variants={itemVariants} className="flex flex-col gap-3 mt-7 text-left">
+                        {role.bullets.map((bullet, j) => (
+                          <li key={j} className="flex gap-3 text-[15px] text-(--fg-1) leading-[1.55]">
+                            <span className="w-[14px] h-px mt-3 bg-(--fg-3) shrink-0" />
+                            <span>{bullet}</span>
+                          </li>
+                        ))}
+                      </motion.ul>
+
+                      <motion.div variants={itemVariants} className="flex flex-wrap gap-1.5 mt-6 justify-center">
+                        {role.stack.map((tag) => (
+                          <span
+                            key={tag}
+                            className="mono text-[10px] text-(--fg-2) px-2 py-1 border border-(--border) rounded-[4px]"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </motion.div>
+                    </div>
+                  )
+                })()
+              ) : (
+                <div className="text-center">
+                  <motion.div variants={itemVariants} className="flex items-center justify-center gap-3 mb-3">
+                    <span className="w-3 h-3 rounded-full bg-(--accent) shrink-0" style={{ boxShadow: '0 0 10px 3px var(--accent)' }} />
+                    <div className="mono text-(--accent) text-[11px]">{current.period}</div>
+                  </motion.div>
+                  <motion.div variants={itemVariants} className="font-(--font-display) text-[clamp(28px,7vw,40px)] text-(--fg-0) leading-[1.15]">
+                    {current.label}
+                  </motion.div>
+                  <motion.div variants={itemVariants} className="mt-10">
+                    <motion.button
+                      onClick={openContactModal}
+                      aria-label="Open contact form"
+                      animate={{
+                        boxShadow: [
+                          '0 0 12px 3px rgba(217,240,74,0.4)',
+                          '0 0 32px 12px rgba(217,240,74,0.75)',
+                          '0 0 12px 3px rgba(217,240,74,0.4)',
+                          '0 0 24px 8px rgba(217,240,74,0.65)',
+                          '0 0 12px 3px rgba(217,240,74,0.4)',
+                          '0 0 12px 3px rgba(217,240,74,0.4)',
+                        ],
+                      }}
+                      whileTap={{ scale: 0.96 }}
+                      transition={{
+                        boxShadow: { duration: 1.8, repeat: Infinity, ease: 'easeInOut', times: HEARTBEAT_TIMES },
+                        scale: { duration: 0.18 },
+                      }}
+                      className="inline-flex items-center gap-3 rounded-full bg-(--accent) text-(--bg-0) font-(--font-mono) text-[13px] tracking-[0.08em] uppercase font-medium px-7 py-5"
+                    >
+                      Get in touch
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </motion.button>
+                  </motion.div>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════
+          DESKTOP layout — unchanged vertical timeline
+         ══════════════════════════════════════════ */}
+      <div className="hidden md:block py-(--s-section)">
+        <div className="container mx-auto px-(--gutter)">
+          <SectionHeading
+            lines={[
+              { text: titleMain },
+              ...(titleMuted ? [{ text: titleMuted, muted: true }] : []),
+            ]}
           />
+
+          <div ref={wrapRef} className="relative mt-24">
+            <div className="absolute top-2 bottom-2 w-px bg-(--border-strong) left-[clamp(20px,4vw,36px)]" />
+            <div
+              ref={fillRef}
+              className="absolute top-2 w-0.5 -ml-px left-[clamp(20px,4vw,36px)] h-0 bg-[linear-gradient(180deg,var(--accent),var(--accent-soft))] shadow-[0_0_12px_var(--accent)] transition-[height] duration-[600ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]"
+            >
+              <span
+                ref={headRef}
+                className="absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2 w-[7px] h-[7px] rounded-full bg-(--accent) opacity-0 transition-opacity duration-200 shadow-[0_0_12px_3px_var(--accent)]"
+              />
+            </div>
+
+            {roles.map((role, i) => (
+              <TimelineNode
+                key={role.company}
+                role={role}
+                idx={i}
+                lit={!!lit[i]}
+                registerDot={(el) => { dotRefs.current[i] = el }}
+              />
+            ))}
+
+            <TimelineCurrent
+              period={current.period}
+              label={current.label}
+              lit={!!lit[roles.length]}
+              registerDot={(el) => { dotRefs.current[roles.length] = el }}
+            />
+          </div>
         </div>
       </div>
 

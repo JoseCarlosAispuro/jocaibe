@@ -36,13 +36,14 @@ const ProjectsFloating = ({ projects, onOpen }: ProjectsFloatingProps) => {
   return (
     <div className="mt-10">
       <div className="flex items-center justify-between gap-6 mb-2 flex-wrap">
-        <span className="mono">Scroll — the work drifts past. Click any card to open it.</span>
+        <span className="mono hidden md:inline">Scroll — the work drifts past. Click any card to open it.</span>
+        <span className="mono md:hidden">Tap any card to open it.</span>
         <span className="mono text-(--fg-3)">{String(projects.length).padStart(2, '0')} projects</span>
       </div>
 
       <div
         ref={containerRef}
-        className="floating-stage relative flex flex-col gap-[clamp(28px,7vw,104px)] pt-14 pb-6"
+        className="floating-stage relative flex flex-col gap-[clamp(48px,7vw,104px)] max-md:gap-10 pt-14 pb-6"
       >
         {projects.map((p, i) => {
           const style = FLOAT_STYLES[i % FLOAT_STYLES.length]

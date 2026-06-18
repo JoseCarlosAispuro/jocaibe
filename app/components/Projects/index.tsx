@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { openContactModal } from '@/app/lib/contactModal'
 import { AnimatePresence } from 'motion/react'
 import SectionHeading from '@/app/partials/SectionHeading'
 import ProjectModal from './ProjectModal'
@@ -20,7 +21,7 @@ const Projects = ({ data }: { data: ProjectsData }) => {
       <div className="container mx-auto px-(--gutter)">
         <SectionHeading
           lines={[
-            { text: 'Seven projects,' },
+            { text: 'Nine projects,' },
             { text: 'One award.', muted: true },
           ]}
         />
@@ -29,12 +30,12 @@ const Projects = ({ data }: { data: ProjectsData }) => {
 
         <div className="mt-16 pt-8 border-t border-(--border) flex justify-between items-center flex-wrap gap-4">
           <span className="mono">More on request — case studies, deeper dives, full client list</span>
-          <a
-            href="#contact"
+          <button
+            onClick={openContactModal}
             className="text-(--accent) font-(--font-mono) text-[12px] tracking-[0.08em] uppercase border-b border-(--accent) pb-[2px]"
           >
             Reach out →
-          </a>
+          </button>
         </div>
       </div>
 

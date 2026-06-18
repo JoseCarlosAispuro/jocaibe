@@ -26,6 +26,7 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
   const ctx = canvas.getContext('2d', { alpha: true })!
   const dpr = Math.min(window.devicePixelRatio || 1, 2)
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const fine   = window.matchMedia('(pointer: fine)').matches
 
   let w = 0, h = 0, raf = 0
   let visible = true
@@ -35,6 +36,12 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
   let canvasLeft = 0, canvasTop = 0
   let dots: Dot[] = []
   let vignette: CanvasGradient | null = null
+  // Mobile ghost cursor: lerped center that shifts to the last tap position
+  let ghostCX = -1, ghostCY = -1   // -1 = not yet initialised (set on first draw)
+  // Tap destination — non-null while constellation is travelling to a tapped point
+  let tapDest: [number, number] | null = null
+  // Time reference for Lissajous — reset once constellation arrives at tap point
+  let tapTimeRef = -1
 
   const build = () => {
     dots = []
@@ -81,11 +88,48 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
   }
 
   const onMove  = (e: MouseEvent) => setPointer(e.clientX, e.clientY)
-  const onTouch = (e: TouchEvent) => { if (e.touches[0]) setPointer(e.touches[0].clientX, e.touches[0].clientY) }
   const onLeave = () => { active = false; tx = -9999; ty = -9999 }
+  const onTap = (e: TouchEvent) => {
+    const t = e.touches[0] ?? e.changedTouches[0]
+    if (!t) return
+    const rect = canvas.getBoundingClientRect()
+    const x = t.clientX - rect.left
+    const y = t.clientY - rect.top
+    // Begin travel phase: constellation lerps to tap point, idle starts on arrival
+    tapDest = [x, y]
+  }
 
   const draw = () => {
     const time = (performance.now() - t0) * 0.001
+
+    // Mobile: ghost cursor wanders on a Lissajous path centred on the last tap
+    // (defaults to canvas centre). On tap the centre smoothly shifts there.
+    if (!fine) {
+      if (ghostCX < 0) { ghostCX = w * 0.5; ghostCY = h * 0.5 }
+
+      if (tapDest) {
+        // Phase 1 — travel: hold tx/ty at the tap point so px/py lerps there
+        tx = tapDest[0]
+        ty = tapDest[1]
+        // Arrive check: once px/py is within 3px, switch to idle
+        const adx = px - tapDest[0]
+        const ady = py - tapDest[1]
+        if (px > -9000 && adx * adx + ady * ady < 9) {
+          ghostCX  = tapDest[0]
+          ghostCY  = tapDest[1]
+          tapDest  = null
+          tapTimeRef = time   // Idle starts from arrival — all sin terms = 0
+        }
+      } else {
+        // Phase 2 — idle: Lissajous orbit around ghostCX/ghostCY
+        if (tapTimeRef < 0) tapTimeRef = time
+        const elapsed = time - tapTimeRef
+        tx = ghostCX + Math.sin(elapsed * 0.22) * w * 0.28 + Math.sin(elapsed * 0.07) * w * 0.10
+        ty = ghostCY + Math.sin(elapsed * 0.17) * h * 0.28 + Math.sin(elapsed * 0.09) * h * 0.10
+      }
+      active = true
+    }
+
     if (px < -9000) { px = tx; py = ty }
     px += (tx - px) * 0.12
     py += (ty - py) * 0.12
@@ -194,17 +238,36 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
     raf = visible ? requestAnimationFrame(draw) : 0
   }
 
+  // Keep canvas offset in sync with scroll (it's cached on resize only)
+  const onScroll = () => {
+    const rect = canvas.getBoundingClientRect()
+    canvasLeft = rect.left
+    canvasTop  = rect.top
+  }
+
   const io = new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting
-    if (visible && raf === 0) raf = requestAnimationFrame(draw)
+    if (visible && raf === 0) {
+      // Snap px/py so the cursor doesn't slide from its old position to the
+      // new Lissajous point — time kept advancing while RAF was paused
+      px = -9999
+      py = -9999
+      raf = requestAnimationFrame(draw)
+    }
   }, { threshold: 0 })
 
   resize()
   window.addEventListener('resize', resize)
-  window.addEventListener('mousemove', onMove)
-  window.addEventListener('touchmove', onTouch, { passive: true })
-  window.addEventListener('touchstart', onTouch, { passive: true })
-  canvas.addEventListener('mouseleave', onLeave)
+  window.addEventListener('scroll', onScroll, { passive: true })
+  if (fine) {
+    window.addEventListener('mousemove', onMove)
+    canvas.addEventListener('mouseleave', onLeave)
+  } else {
+    // Reset ghost centre on resize so it re-seeds from new canvas dimensions
+    const onResizeMobile = () => { ghostCX = -1; ghostCY = -1; tapDest = null; tapTimeRef = -1 }
+    window.addEventListener('resize', onResizeMobile)
+    window.addEventListener('touchstart', onTap, { passive: true })
+  }
   io.observe(canvas)
   draw()
 
@@ -212,9 +275,12 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
     cancelAnimationFrame(raf)
     io.disconnect()
     window.removeEventListener('resize', resize)
-    window.removeEventListener('mousemove', onMove)
-    window.removeEventListener('touchmove', onTouch)
-    window.removeEventListener('touchstart', onTouch)
-    canvas.removeEventListener('mouseleave', onLeave)
+    window.removeEventListener('scroll', onScroll)
+    if (fine) {
+      window.removeEventListener('mousemove', onMove)
+      canvas.removeEventListener('mouseleave', onLeave)
+    } else {
+      window.removeEventListener('touchstart', onTap)
+    }
   }
 }

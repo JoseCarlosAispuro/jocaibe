@@ -1,6 +1,7 @@
 'use client'
 
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useRef} from 'react'
+import { openContactModal } from '@/app/lib/contactModal'
 import {useLenis} from 'lenis/react'
 import clsx from 'clsx'
 import { motion } from 'motion/react'
@@ -21,29 +22,45 @@ interface NavProps {
     email: string
 }
 
-const NavLink = ({label, href}: NavLinkItem) => {
-    return (
-        <MotionLink
-            href={href}
-            className="font-(--font-mono) text-[12px] tracking-[0.08em] uppercase"
-            initial={{ color: 'var(--fg-2)' }}
-            whileHover={{ color: 'var(--accent)' }}
-            transition={{ duration: 0.18 }}
-        >
-            {label}
-        </MotionLink>
-    )
-}
-
 const Navigation = ({links, email}: NavProps) => {
     const [scrolled, setScrolled] = useState(false)
+    const [hidden, setHidden] = useState(false)
     const [menuOpen, setMenuOpen] = useState(false)
+    const prevScrollRef = useRef(0)
+    const hiddenRef = useRef(false)
 
-    // Lenis fires on every smoothed scroll tick
-    useLenis(({scroll}) => setScrolled(scroll > 24))
+    const lenis = useLenis(({scroll}) => {
+        const prev = prevScrollRef.current
+        const delta = scroll - prev
+
+        setScrolled(scroll > 24)
+
+        if (scroll <= window.innerHeight) {
+            // Inside the hero — always visible
+            if (hiddenRef.current) { hiddenRef.current = false; setHidden(false) }
+        } else if (delta > 8 && !hiddenRef.current) {
+            // Scrolled down more than 8px past the hero — hide
+            hiddenRef.current = true
+            setHidden(true)
+        } else if (delta < -8 && hiddenRef.current) {
+            // Scrolled up more than 8px — show
+            hiddenRef.current = false
+            setHidden(false)
+        }
+
+        prevScrollRef.current = scroll
+    })
+
+    const scrollToHash = (href: string) => {
+        if (!href.startsWith('#')) return
+        const el = document.querySelector(href)
+        if (!el) return
+        lenis ? lenis.scrollTo(el as HTMLElement) : el.scrollIntoView({ behavior: 'smooth' })
+    }
 
     // Seed initial state (Lenis hasn't fired yet on mount)
     useEffect(() => {
+        prevScrollRef.current = window.scrollY
         setScrolled(window.scrollY > 24)
     }, [])
 
@@ -58,8 +75,9 @@ const Navigation = ({links, email}: NavProps) => {
         <>
             <nav
                 className={clsx(
-                    'fixed top-0 left-0 right-0 z-50 border-b border-transparent transition-all duration-[320ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]',
+                    'fixed top-0 left-0 right-0 z-50 border-b border-transparent transition-all duration-[520ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]',
                     {'nav-scrolled': scrolled},
+                    {'-translate-y-full': hidden && !menuOpen},
                 )}
             >
                 <div className="container mx-auto px-(--gutter) flex items-center justify-between h-[72px]">
@@ -71,7 +89,22 @@ const Navigation = ({links, email}: NavProps) => {
                         {/* Desktop links */}
                         <div className="hidden sm:flex gap-7">
                             {links.map(({label, href}) => (
-                                <NavLink key={label} label={label} href={href}/>
+                                <MotionLink
+                                    key={label}
+                                    href={href}
+                                    onClick={(e) => {
+                                        if (href.startsWith('#')) {
+                                            e.preventDefault()
+                                            scrollToHash(href)
+                                        }
+                                    }}
+                                    className="font-(--font-mono) text-[12px] tracking-[0.08em] uppercase"
+                                    initial={{ color: 'var(--fg-2)' }}
+                                    whileHover={{ color: 'var(--accent)' }}
+                                    transition={{ duration: 0.18 }}
+                                >
+                                    {label}
+                                </MotionLink>
                             ))}
                         </div>
 
@@ -106,7 +139,13 @@ const Navigation = ({links, email}: NavProps) => {
                             <Link
                                 key={label}
                                 href={href}
-                                onClick={() => setMenuOpen(false)}
+                                onClick={(e) => {
+                                    if (href.startsWith('#')) {
+                                        e.preventDefault()
+                                        scrollToHash(href)
+                                    }
+                                    setMenuOpen(false)
+                                }}
                                 className="flex items-baseline gap-4 font-(--font-display) text-[clamp(40px,13vw,64px)] font-medium tracking-[-0.03em] text-(--fg-0) py-[10px] border-b border-(--border)"
                             >
                                 <span className="mono text-(--accent) text-[12px]">0{i + 1}</span>
@@ -116,13 +155,12 @@ const Navigation = ({links, email}: NavProps) => {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <Link
-                            href={`mailto:${email}`}
-                            onClick={() => setMenuOpen(false)}
-                            className="font-(--font-mono) text-[13px] text-(--fg-1) tracking-[0.04em]"
+                        <button
+                            onClick={() => { setMenuOpen(false); openContactModal() }}
+                            className="font-(--font-mono) text-[13px] text-(--fg-1) tracking-[0.04em] text-left"
                         >
                             {email} ↗
-                        </Link>
+                        </button>
                         <span className="mono inline-flex items-center gap-2">
               <span className="size-[7px] rounded-full bg-(--success)"/>
               Available for Q3 2026

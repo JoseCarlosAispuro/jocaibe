@@ -18,6 +18,7 @@ When invoked, scaffold a new Next.js App Router project (or bring an existing on
 | Language | TypeScript (strict) |
 | Styling | Tailwind CSS v4 — no config file, CSS-first via `@import "tailwindcss"` |
 | Smooth scroll | Lenis (`lenis` + `lenis/react`) |
+| Animation | `motion/react` (Framer Motion) — for all JS-driven animations |
 | Fonts | `next/font/google` — expose as CSS variables |
 | Package manager | pnpm |
 
@@ -30,33 +31,43 @@ app/
 ├── components/          # Page sections — one folder per component
 │   └── Hero/
 │       ├── index.tsx    # Main export
-│       └── [SubPart].tsx # Sub-components (e.g. KineticHeadline)
+│       └── [SubPart].tsx
 ├── data/                # One JSON file per section + page.json for global config
 │   ├── page.json
 │   ├── nav.json
 │   └── hero.json
 ├── helpers/             # Pure utilities and non-hook logic (shaders, formatters)
-├── hooks/               # Custom React hooks (useReveal, etc.)
-├── icons/               # SVG icon components (RightArrow.tsx, etc.)
+├── hooks/               # Custom React hooks
+├── icons/               # SVG icon components — one file per icon, PascalCase
+│   ├── Close.tsx        # Accept optional `size` prop
+│   ├── ChevronLeft.tsx
+│   ├── ChevronRight.tsx
+│   └── RightArrow.tsx
+├── lib/
+│   ├── constants.ts     # Shared animation constants (EASE, HEARTBEAT_*)
+│   ├── assets.ts        # Asset URL helpers
+│   └── contactModal.ts  # Cross-component event bus helpers
 ├── partials/            # Global reusable UI: Navigation, SectionHeading, LenisProvider
 ├── types/               # Shared TypeScript interfaces/types
-├── globals.css
+├── styles/
+│   └── globals.css
 ├── layout.tsx
 └── page.tsx
 ```
 
 ### Rules
-- **`components/`** — page-level sections only. Each section is a folder (`Hero/`, `Timeline/`). The folder's `index.tsx` is the default export. Sub-components that are tightly coupled live in the same folder.
-- **`partials/`** — cross-section UI (Navigation, SectionHeading, LenisProvider). Not page-specific.
+- **`components/`** — page-level sections only. Each section is a folder (`Hero/`, `Timeline/`). Sub-components tightly coupled to a section live in the same folder.
+- **`partials/`** — cross-section UI (Navigation, SectionHeading, LenisProvider, Button, CursorFX). Not page-specific.
 - **`helpers/`** — pure functions, no hooks. Canvas shaders, animation utilities, formatters.
-- **`hooks/`** — custom hooks only (`useReveal`, `useLenis` wrappers, etc.).
-- **`icons/`** — one file per icon, named in PascalCase (`RightArrow.tsx`).
-- **`data/`** — all copy/content as JSON. Components import their own JSON file. `page.json` holds global config (available status, labels).
+- **`hooks/`** — custom hooks only (`useReveal`, `useViewport`, `useMagnetic`, `useParallax`, etc.).
+- **`icons/`** — one file per icon, named in PascalCase. Icons accept a `size` prop and always set `aria-hidden="true"`.
+- **`lib/constants.ts`** — shared animation constants. Never redefine `EASE`, `HEARTBEAT_SCALE`, or `HEARTBEAT_TIMES` inline in components.
+- **`data/`** — all copy/content as JSON. Components never fetch their own data.
 - **`types/`** — shared interfaces exported and imported across components.
 
 ---
 
-## 3. CSS Architecture (`globals.css`)
+## 3. CSS Architecture (`styles/globals.css`)
 
 ```css
 @import "tailwindcss";
@@ -110,67 +121,45 @@ app/
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-/* ── Base reset — inside @layer base so Tailwind utilities override it ── */
 @layer base {
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; background: var(--bg-0); color: var(--fg-0); }
-  body { font-family: var(--font-body); font-size: var(--fs-body); line-height: 1.55; min-height: 100vh; overflow-x: hidden; }
+  html { scroll-behavior: smooth; background: var(--bg-0); color: var(--fg-0); overflow-x: clip; }
+  body { font-family: var(--font-body); font-size: var(--fs-body); line-height: 1.55; min-height: 100vh; overflow-x: clip; }
   a { color: inherit; text-decoration: none; }
   button { border: none; background: none; color: inherit; cursor: pointer; font-family: inherit; }
   img, svg, canvas { display: block; max-width: 100%; }
 }
 
-/* ── Unlayered utilities — intentionally beat Tailwind's @layer utilities ── */
-.container {
-  margin-inline: auto;
-  max-width: var(--max);
-  padding-inline: var(--gutter);
-}
+.container { margin-inline: auto; max-width: var(--max); padding-inline: var(--gutter); }
 
 .mono {
   font-family: var(--font-mono);
   font-size: var(--fs-mono-ui);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--fg-3);
 }
 
-/* ── Global keyframes ── */
+/* All shared @keyframes live here — never in component inline styles */
 @keyframes revealIn {
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
-.reveal-from { opacity: 0; transform: translateY(24px); }
-.reveal-on   { animation: revealIn 560ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal-on { animation: revealIn 1ms linear both; }
-}
-
-@keyframes heartbeat {
-  0%   { transform: scale(1);    box-shadow: 0 0 6px 0 var(--beat-glow, var(--accent)); }
-  11%  { transform: scale(1.45); box-shadow: 0 0 18px 5px var(--beat-glow, var(--accent)); }
-  22%  { transform: scale(1);    box-shadow: 0 0 6px 0 var(--beat-glow, var(--accent)); }
-  33%  { transform: scale(1.28); box-shadow: 0 0 14px 3px var(--beat-glow, var(--accent)); }
-  45%  { transform: scale(1);    box-shadow: 0 0 6px 0 var(--beat-glow, var(--accent)); }
-  100% { transform: scale(1);    box-shadow: 0 0 5px 0 var(--beat-glow, var(--accent)); }
-}
 ```
 
 ### Critical CSS rules
-- **`@layer base`** for the reset so `mt-12`, `mb-8`, and all margin/padding utilities override it.
-- **`.container` and `.mono` are unlayered** so they beat Tailwind's generated `@layer utilities` container.
-- All shared `@keyframes` live in `globals.css` — never in inline `<style>` tags inside components.
-- Token reference in Tailwind: `text-(--accent)` for color, `[font-size:var(--fs-display)]` for size, `bg-(--bg-0)` for background.
+- Use `overflow-x: clip` (not `hidden`) on `html` and `body` — `clip` doesn't create a scroll container so `position: sticky` still works.
+- `@layer base` for the reset so margin/padding utilities override it.
+- `.container` and `.mono` are unlayered so they beat Tailwind's `@layer utilities`.
+- All shared `@keyframes` live in `globals.css` — never in inline `<style>` tags or component files.
+- Token reference in Tailwind: `text-(--accent)`, `bg-(--bg-0)`, `border-(--border)`.
 
 ### Tailwind v4 gotchas
 | Pattern | Wrong | Right |
 |---|---|---|
-| Font size via token | `text-[var(--fs-display)]` → resolves as color | `[font-size:var(--fs-display)]` |
+| Font size via token | `text-[var(--fs-display)]` | `[font-size:var(--fs-display)]` |
 | Color via token | `text-[var(--accent)]` | `text-(--accent)` |
-| Translate transition | `transition-[transform,...]` | `transition-[translate,...]` — v4 uses CSS `translate` property |
-| Margin utilities | Only work if reset is in `@layer base` | See CSS architecture above |
+| Translate transition | `transition-[transform]` | `transition-[translate]` — v4 uses the CSS `translate` property |
+| Overflow for sticky | `overflow-x: hidden` on `html` | `overflow-x: clip` |
 
 ---
 
@@ -179,26 +168,14 @@ app/
 ```tsx
 import type { Metadata } from 'next'
 import { Space_Grotesk, JetBrains_Mono } from 'next/font/google'
-import './globals.css'
+import '@/app/styles/globals.css'
 import 'lenis/dist/lenis.css'
 import LenisProvider from '@/app/partials/LenisProvider'
 
-const spaceGrotesk = Space_Grotesk({
-  variable: '--font-space-grotesk',
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-})
+const spaceGrotesk = Space_Grotesk({ variable: '--font-space-grotesk', subsets: ['latin'] })
+const jetbrainsMono = JetBrains_Mono({ variable: '--font-jetbrains-mono', subsets: ['latin'] })
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: '--font-jetbrains-mono',
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
-})
-
-export const metadata: Metadata = {
-  title: 'Project Title',
-  description: 'Description.',
-}
+export const metadata: Metadata = { title: 'Project', description: '...' }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -213,9 +190,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 ---
 
-## 5. Lenis Setup (`app/partials/LenisProvider.tsx`)
+## 5. Lenis Setup
 
 ```tsx
+// app/partials/LenisProvider.tsx
 'use client'
 import { ReactLenis } from 'lenis/react'
 
@@ -230,80 +208,227 @@ export default function LenisProvider({ children }: { children: React.ReactNode 
 
 ---
 
-## 6. `useReveal` Hook (`app/hooks/useReveal.ts`)
-
-Scroll-triggered entrance reveal. Uses Lenis for scroll tracking and CSS classes for animation.
+## 6. Shared Animation Constants (`app/lib/constants.ts`)
 
 ```ts
-import { useRef, useEffect, useLayoutEffect } from 'react'
-import { useLenis } from 'lenis/react'
-
-interface RevealOpts { threshold?: number }
-
-export function useReveal(delay = 0, opts: RevealOpts = {}) {
-  const ref = useRef<HTMLElement>(null)
-  const firedRef = useRef(false)
-  const threshold = opts.threshold ?? 0.85
-
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-    el.classList.add('reveal-from')
-  }, [])
-
-  const trigger = () => {
-    if (firedRef.current) return
-    const el = ref.current
-    if (!el) return
-    const { top, height } = el.getBoundingClientRect()
-    if (height === 0) return
-    const vh = window.innerHeight || document.documentElement.clientHeight
-    if (top > vh * threshold) return
-    firedRef.current = true
-    el.classList.remove('reveal-from')
-    if (delay) el.style.animationDelay = `${delay}ms`
-    el.classList.add('reveal-on')
-  }
-
-  useLenis(trigger)
-
-  useEffect(() => {
-    trigger()
-    window.addEventListener('resize', trigger, { passive: true })
-    return () => window.removeEventListener('resize', trigger)
-  }, [])
-
-  return ref
-}
+export const EASE = [0.2, 0.7, 0.2, 1] as [number, number, number, number]
+export const HEARTBEAT_SCALE = [1, 1.45, 1, 1.28, 1, 1]
+export const HEARTBEAT_TIMES = [0, 0.11, 0.22, 0.33, 0.45, 1]
 ```
+
+**Always import from here.** Never redefine these inline in components.
 
 ---
 
-## 7. Component Conventions
+## 7. Lenis Scroll Patterns
+
+### In components/hooks — use `useLenis`
+```ts
+import { useLenis } from 'lenis/react'
+
+useLenis(({ scroll, velocity }) => {
+  // fires on every smoothed scroll tick — Lenis already smooths the scroll,
+  // so set DOM state directly here. Do NOT run a secondary RAF loop on top.
+})
+```
+
+### Scroll-driven animation pattern
+```ts
+const update = useCallback(() => {
+  const el = ref.current
+  if (!el) return
+  const rect = el.getBoundingClientRect()
+  // compute and apply directly — no secondary interpolation needed
+}, [])
+
+useLenis(update)
+useEffect(() => {
+  update()
+  window.addEventListener('resize', update, { passive: true })
+  return () => window.removeEventListener('resize', update)
+}, [update])
+```
+
+### Scrolling to a section
+```ts
+const lenis = useLenis()
+lenis?.scrollTo(element)   // NOT window.lenis — that doesn't exist
+```
+
+### Rules
+- **Never** use `window.addEventListener('scroll', ...)` — always use `useLenis`.
+- **Never** read `window.scrollY` inside a RAF loop — read it from Lenis callback or `el.getBoundingClientRect()` on demand.
+- **Never** run a secondary RAF loop to smooth scroll values — Lenis already does it.
+
+---
+
+## 8. Motion / Framer Motion Patterns
+
+All JS-driven animations use `motion/react`. CSS transitions are acceptable for simple hover/focus state changes that don't need JS control (e.g. `transition-colors`, `transition-opacity`). Use motion when:
+- Animation is triggered by scroll, JS state, or gesture
+- Animation needs spring physics or stagger
+- Element needs `AnimatePresence` enter/exit
+
+```tsx
+import { motion, AnimatePresence } from 'motion/react'
+import { EASE } from '@/app/lib/constants'
+
+// Enter/exit
+<AnimatePresence>
+  {open && (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 16 }}
+      transition={{ duration: 0.32, ease: EASE }}
+    />
+  )}
+</AnimatePresence>
+
+// Spring
+transition={{ type: 'spring', stiffness: 380, damping: 40, mass: 0.9 }}
+
+// Hover (no React state needed)
+<motion.button whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.96 }} />
+```
+
+### Rules
+- Use `whileHover` / `whileTap` instead of `animate={{ scale: hover ? ... }}` + React state.
+- Add `will-change-transform` on elements that animate `transform` in a RAF loop.
+- Add `aria-hidden="true"` on decorative SVGs and spinner icons inside buttons.
+
+---
+
+## 9. Performance Rules
+
+### RAF loops
+- **Never** call `getBoundingClientRect()` inside a RAF loop. Cache positions in a `measure()` function called on mount, resize, and scroll (via ResizeObserver or Lenis).
+- Use `IntersectionObserver` to pause RAF loops when the element is off-screen.
+- Add `will-change-transform` on elements animated via JS `style.transform`.
+- Add `{ passive: true }` to all scroll, wheel, and touchstart event listeners.
+
+```ts
+// Correct pattern — measure outside loop
+const centres = useRef<{cx: number; cy: number}[]>([])
+
+const measure = () => {
+  elements.forEach((el, i) => {
+    const r = el.getBoundingClientRect()
+    centres.current[i] = { cx: r.left + r.width / 2, cy: r.top + r.height / 2 }
+  })
+}
+
+// RAF loop reads from cache only
+const loop = () => {
+  elements.forEach((el, i) => {
+    const { cx, cy } = centres.current[i]  // no getBoundingClientRect here
+    // ...compute and apply
+  })
+  raf = requestAnimationFrame(loop)
+}
+```
+
+### Images
+- Always add `loading="lazy"` to images that are not above the fold.
+- Add `alt` text to all `<img>` elements. Decorative images use `alt=""`.
+
+### Event listener cleanup
+- Always return cleanup functions from `useEffect` that remove event listeners and cancel RAF.
+
+---
+
+## 10. Semantic HTML
+
+- Sections use `<section id="...">`, not `<div>`.
+- Navigation uses `<nav>` with `aria-label`.
+- Page footer uses `<footer>`.
+- Lists use `<ul>` / `<ol>` + `<li>`, not divs.
+- Heading hierarchy: one `<h1>` per page (hero), sections use `<h2>`, sub-items use `<h3>`.
+- Clickable non-button, non-link elements: add `role="button"`, `tabIndex={0}`, and `onKeyDown` handler for Enter/Space.
+- Carousels: wrap in `<section aria-label="...">` or `role="region" aria-label="..."`.
+
+---
+
+## 11. ADA / Accessibility
+
+### Every component must have:
+- `aria-label` on all icon-only buttons (close, nav hamburger, carousel prev/next).
+- `aria-hidden="true"` on all decorative SVGs and spinner icons.
+- `aria-modal="true"` + `aria-label` on dialog overlays.
+- `aria-current="true"` on active carousel/pagination dots.
+- `aria-required="true"` + `aria-invalid={!!error}` on required form inputs.
+- `role="alert"` on error messages that appear dynamically.
+- `noValidate` on `<form>` elements when using custom validation (prevents browser tooltip).
+- `htmlFor` on `<label>` matching the input `id`.
+
+### Modals
+```tsx
+// Focus the first interactive element when modal opens
+const firstInputRef = useRef<HTMLInputElement>(null)
+useEffect(() => {
+  const frame = requestAnimationFrame(() => firstInputRef.current?.focus())
+  return () => cancelAnimationFrame(frame)
+}, [])
+
+// Restore focus on close — store trigger ref before opening
+// Close on Escape
+useEffect(() => {
+  const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+  window.addEventListener('keydown', onKey)
+  return () => window.removeEventListener('keydown', onKey)
+}, [onClose])
+```
+
+### Keyboard navigation
+- All clickable `<article>`, `<div>` etc. with `onClick` must also have `tabIndex={0}` and `onKeyDown` for Enter/Space.
+- Carousel dot buttons must have descriptive `aria-label` (e.g. `"Go to slide 3"`).
+
+---
+
+## 12. Icon Components
+
+All icons live in `app/icons/` and follow this pattern:
+
+```tsx
+// app/icons/Close.tsx
+const Close = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 14 14" aria-hidden="true">
+    <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+)
+export default Close
+```
+
+Rules:
+- Always `aria-hidden="true"` — the parent button carries the accessible label.
+- Accept a `size` prop with a sensible default.
+- Use `currentColor` for strokes/fills so the parent controls color via Tailwind.
+- Never inline the same SVG in two places — extract to `app/icons/` and import.
+
+---
+
+## 13. Component Conventions
 
 ### Server vs Client
-- Default to **Server Components** for anything that is static or data-fetching.
-- Add `'use client'` only when the component needs hooks, event handlers, or browser APIs.
-- Split: Server parent fetches/imports data → passes to Client child for interactivity.
+- Default to **Server Components**. Add `'use client'` only when using hooks, event handlers, or browser APIs.
 
 ### Component structure
 ```tsx
 // app/components/MySection/index.tsx
-'use client' // only if needed
+'use client'
 
-import { useReveal } from '@/app/hooks/useReveal'
+import { useCallback } from 'react'
+import { useLenis } from 'lenis/react'
+import { motion } from 'motion/react'
 import SectionHeading from '@/app/partials/SectionHeading'
+import { EASE } from '@/app/lib/constants'
 import type { MySectionData } from '@/app/types/my-section'
 
 export default function MySection({ data }: { data: MySectionData }) {
-  const ref = useReveal(0)
   return (
     <section id="my-section" className="py-(--s-section)">
-      <div className="container">
-        <SectionHeading eyebrow="Label" titleMain="Main title." titleMuted="Muted part." />
-        <div ref={ref as React.RefObject<HTMLDivElement>}>
-          {/* content */}
-        </div>
+      <div className="container mx-auto px-(--gutter)">
+        <SectionHeading lines={[{ text: data.title }]} />
       </div>
     </section>
   )
@@ -311,116 +436,38 @@ export default function MySection({ data }: { data: MySectionData }) {
 ```
 
 ### Data pattern
-- Every section has a JSON file in `app/data/[section].json`.
-- The interface lives in `app/types/[section].ts` (or co-located in `index.tsx` and exported).
-- `page.tsx` imports the JSON and passes it as props — components never fetch their own data.
+- Every section has `app/data/[section].json`.
+- `page.tsx` imports JSON and passes as props. Components never fetch their own data.
+- Interfaces live in `app/types/[section].ts`.
+
+### Tailwind class ordering
+Order classes from shortest to longest within logical groups: layout → sizing → spacing → borders → colors → typography → effects → responsive/state modifiers.
 
 ```tsx
-// app/page.tsx
-import heroData from '@/app/data/hero.json'
-import Hero from '@/app/components/Hero'
-export default function Home() {
-  return <main><Hero data={heroData} /></main>
-}
-```
+// Good
+className="flex items-center gap-3 px-4 py-2 rounded-full border border-(--border) bg-(--bg-1) text-[14px] text-(--fg-0) transition-colors duration-[180ms] hover:border-(--accent)"
 
-### `SectionHeading` partial
-```tsx
-// app/partials/SectionHeading.tsx
-'use client'
-import { useReveal } from '@/app/hooks/useReveal'
-
-interface SectionHeadingProps {
-  eyebrow: string
-  titleMain: string
-  titleMuted?: string
-  right?: React.ReactNode
-}
-
-export default function SectionHeading({ eyebrow, titleMain, titleMuted, right }: SectionHeadingProps) {
-  const ref = useReveal(0)
-  return (
-    <div ref={ref as React.RefObject<HTMLDivElement>} className="grid grid-cols-12 gap-8 items-baseline">
-      <div className="col-span-2 flex items-baseline gap-2">
-        <span className="mono text-(--accent)">/</span>
-        <span className="mono">{eyebrow}</span>
-      </div>
-      <h2 className="col-span-8 [font-family:var(--font-display)] [font-size:var(--fs-h1)] font-medium tracking-[-0.03em] leading-none text-(--fg-0)">
-        {titleMain}
-        {titleMuted && <><br /><span className="text-(--fg-2)">{titleMuted}</span></>}
-      </h2>
-      {right && <div className="col-span-2 text-right">{right}</div>}
-    </div>
-  )
-}
+// Bad — random order
+className="text-(--fg-0) hover:border-(--accent) border-(--border) flex rounded-full gap-3 bg-(--bg-1) items-center transition-colors border px-4 py-2 text-[14px] duration-[180ms]"
 ```
 
 ---
 
-## 8. Lenis Scroll Patterns
-
-### In hooks — use `useLenis`
-```ts
-import { useLenis } from 'lenis/react'
-useLenis(() => {
-  // fires on every smoothed scroll tick
-})
-```
-
-### Cleanup pattern for scroll-driven animations
-```ts
-const update = useCallback(() => {
-  const el = ref.current
-  if (!el) return
-  const rect = el.getBoundingClientRect()
-  // compute and apply directly — no secondary interpolation loop needed
-  // Lenis already smooths the scroll
-}, [])
-
-useLenis(update)
-
-useEffect(() => {
-  update() // seed initial state
-  window.addEventListener('resize', update, { passive: true })
-  return () => window.removeEventListener('resize', update)
-}, [update])
-```
-
-**Do not** run a secondary RAF interpolation loop on top of Lenis — it already smooths scroll. Set DOM state directly in the Lenis callback.
-
----
-
-## 9. Inline Style Rules
-
-Use inline `style` prop (not Tailwind arbitrary values) when:
-- Values contain `color-mix()`, `calc()` with custom properties, or `clamp()` with multiple tokens
-- Padding/size values that have been proven to generate wrong output from Tailwind arbitrary syntax
-- CSS custom properties set dynamically (e.g. `--beat-glow`)
-
-```tsx
-// Prefer inline style for complex values
-style={{ padding: '18px 28px' }}
-style={{ background: 'color-mix(in oklab, var(--bg-1) 60%, transparent)' }}
-
-// Prefer Tailwind for everything else
-className="mt-12 text-(--accent) border border-(--border) rounded-full"
-```
-
----
-
-## 10. Scaffold Checklist
-
-When creating a new project, complete these steps in order:
+## 14. Scaffold Checklist
 
 - [ ] `pnpm create next-app` with TypeScript, App Router, no src/, no default Tailwind config
-- [ ] Install: `pnpm add lenis` and `pnpm add -D @tailwindcss/postcss tailwindcss`
+- [ ] Install: `pnpm add lenis motion` and `pnpm add -D tailwindcss`
 - [ ] Remove `tailwind.config.*` — Tailwind v4 is CSS-first
-- [ ] Set up `postcss.config.mjs` with `@tailwindcss/postcss`
-- [ ] Write `globals.css` with tokens, `@layer base` reset, `.container`, `.mono`, keyframes
-- [ ] Write `layout.tsx` with fonts, `lenis/dist/lenis.css` import, `LenisProvider`
+- [ ] Write `styles/globals.css` with tokens, `@layer base` reset, `.container`, `.mono`, keyframes
+- [ ] Write `layout.tsx` with fonts, `lenis/dist/lenis.css`, `LenisProvider`
 - [ ] Create `app/partials/LenisProvider.tsx`
-- [ ] Create `app/hooks/useReveal.ts`
+- [ ] Create `app/lib/constants.ts` with `EASE`, `HEARTBEAT_SCALE`, `HEARTBEAT_TIMES`
+- [ ] Create `app/hooks/useViewport.ts` (reduce motion, pointer fine, hover, vh)
 - [ ] Create `app/partials/SectionHeading.tsx`
 - [ ] Create `app/partials/Navigation.tsx`
+- [ ] Create `app/partials/CursorFX.tsx` (desktop custom cursor, reads `data-cursor` attribute)
+- [ ] Create `app/partials/Button.tsx` (link / scroll / modal variants with magnetic effect)
+- [ ] Create icon components in `app/icons/` (Close, ChevronLeft, ChevronRight, RightArrow)
 - [ ] Create `app/data/page.json` and `app/data/nav.json`
 - [ ] Build sections one at a time — data JSON → type → component
+- [ ] Audit each section: semantic HTML, aria labels, keyboard navigation, RAF performance

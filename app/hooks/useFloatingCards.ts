@@ -16,29 +16,33 @@ export interface FloatItemConfig {
  * of card elements.
  *
  * Performance guarantees:
+ *  - Zero getBoundingClientRect() calls inside the RAF loop.
+ *    Positions are cached on mount and refreshed by ResizeObserver
+ *    (layout change) and IntersectionObserver (container enters viewport).
  *  - IntersectionObserver pauses the RAF loop when the container leaves
  *    the viewport — zero main-thread cost when off-screen.
- *  - All getBoundingClientRect() calls are batched into a single read
- *    pass before any style writes, avoiding interleaved forced reflows.
+ *  - All hover effects are CSS-only (group-hover:) — no React re-renders
+ *    from pointer events during animation.
  *  - In reduced-motion mode the loop self-terminates once all cards
- *    have settled; a scroll listener restarts it if new cards enter view.
- *  - In normal mode the bob sine keeps the loop running while visible,
- *    and pauses automatically when the section leaves the viewport.
+ *    have settled; scroll/mouse events restart it if needed.
  */
 export const useFloatingCards = (
   containerRef: React.RefObject<HTMLElement | null>,
   configs: FloatItemConfig[],
 ) => {
-  const cardsRef  = useRef<(HTMLElement | null)[]>([])
-  const appearRef = useRef<number[]>([])
-  // Keep configs accessible inside the RAF loop without adding them to
-  // the effect's dependency array (the array identity changes every render).
+  const cardsRef   = useRef<(HTMLElement | null)[]>([])
+  const appearRef  = useRef<number[]>([])
+  // Cached absolute (document-relative) positions — updated by measure(),
+  // never inside the RAF loop.
+  const absTopRef  = useRef<number[]>([])
+  const heightRef  = useRef<number[]>([])
+  // Stable ref so the loop always sees current configs without being
+  // recreated on every render.
   const configsRef = useRef(configs)
   configsRef.current = configs
 
   const { reduce, fine } = useViewport()
 
-  // Reset appear state when the number of cards changes.
   useEffect(() => {
     appearRef.current = configs.map(() => 0)
   }, [configs.length]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -47,7 +51,24 @@ export const useFloatingCards = (
     const container = containerRef.current
     if (!container) return
 
-    let raf  = 0
+    // ── measure ─────────────────────────────────────────────────────────
+    // Batch-reads all card positions from the DOM. Called once on mount,
+    // once when the container enters the viewport (handles lazy images /
+    // font-swap shifts), and once per ResizeObserver callback.
+    // NEVER called inside the RAF loop.
+    const measure = () => {
+      const scrollY = window.scrollY
+      const cards   = cardsRef.current
+      for (let i = 0; i < cards.length; i++) {
+        const el = cards[i]
+        if (!el) continue
+        const r = el.getBoundingClientRect()
+        absTopRef.current[i] = r.top + scrollY
+        heightRef.current[i] = r.height
+      }
+    }
+
+    let raf     = 0
     let visible = false
     let mx = 0, my = 0, cmx = 0, cmy = 0
 
@@ -58,68 +79,57 @@ export const useFloatingCards = (
     const onMove = (e: MouseEvent) => {
       mx = e.clientX / window.innerWidth  - 0.5
       my = e.clientY / window.innerHeight - 0.5
-      startLoop() // no-op if already running
+      startLoop()
     }
-
     const onScroll = () => startLoop()
 
     if (fine && !reduce) window.addEventListener('mousemove', onMove, { passive: true })
     window.addEventListener('scroll', onScroll, { passive: true })
 
+    // ── RAF loop ─────────────────────────────────────────────────────────
+    // All position data comes from cached refs — no layout reads here.
     const loop = (now: number) => {
+      const scrollY = window.scrollY
       const vh      = window.innerHeight
       const t       = now * 0.001
       const cards   = cardsRef.current
       const appears = appearRef.current
       const cfgs    = configsRef.current
+      const absTops = absTopRef.current
+      const heights = heightRef.current
 
       cmx += (mx - cmx) * 0.06
       cmy += (my - cmy) * 0.06
 
-      // ── Pass 1: batch all layout reads ──────────────────────────────
-      // Reading every rect before any write prevents interleaved
-      // forced reflows (one per card → N reflows/frame without batching).
-      const tops:    number[] = new Array(cards.length)
-      const heights: number[] = new Array(cards.length)
-      for (let i = 0; i < cards.length; i++) {
-        const el = cards[i]
-        if (el) {
-          const r  = el.getBoundingClientRect()
-          tops[i]    = r.top
-          heights[i] = r.height
-        } else {
-          tops[i] = heights[i] = 0
-        }
-      }
-
-      // ── Pass 2: compute + write ─────────────────────────────────────
-      // canSettle is only true in reduced-motion mode — the bob sine
-      // in normal mode means the loop never fully settles.
       let canSettle = reduce
       for (let i = 0; i < cards.length; i++) {
         const el = cards[i]
-        if (!el || heights[i] === 0) continue
+        if (!el) continue
+        const height = heights[i] ?? 0
+        if (!height) continue
         const cfg = cfgs[i]
         if (!cfg) continue
 
-        const top    = tops[i]
-        const height = heights[i]
+        // Viewport-relative top — pure arithmetic, zero DOM reads
+        const top    = (absTops[i] ?? 0) - scrollY
         const center = top + height / 2
         const rel    = (center - vh / 2) / vh
         const target = top < vh * 0.86 ? 1 : 0
 
+        // Entrance lerp is always animated (unless reduce). The `!fine` branch
+        // only skips the desktop bob/tilt — not the reveal itself.
         appears[i] = (appears[i] ?? 0) + (target - (appears[i] ?? 0)) * (reduce ? 1 : 0.08)
         const enter = Math.max(0, Math.min(1, appears[i]))
 
         let tx: number, ty: number, rot: number, scale: number
-        if (reduce) {
+        if (reduce || !fine) {
           tx = 0; ty = (1 - enter) * 18; rot = 0; scale = 1
         } else {
-          const parallax = rel * cfg.depth * 46
-          const bob      = Math.sin(t * cfg.speed + cfg.phase) * 7
-          ty    = parallax + bob + (1 - enter) * 48
-          tx    = cmx * cfg.depth * 16 + (1 - enter) * (cfg.lane === 'end' ? 26 : -26)
-          rot   = cfg.rot + rel * 1.4 + cmx * cfg.depth * 0.7
+          const parallax = rel * cfg.depth * 64
+          const bob      = Math.sin(t * cfg.speed + cfg.phase) * 22
+          ty    = parallax + bob + cmy * cfg.depth * 18 + (1 - enter) * 48
+          tx    = cmx * cfg.depth * 26 + (1 - enter) * (cfg.lane === 'end' ? 26 : -26)
+          rot   = cfg.rot + rel * 2.4 + cmx * cfg.depth * 1.4
           scale = 0.93 + 0.07 * enter
         }
 
@@ -132,18 +142,30 @@ export const useFloatingCards = (
       raf = visible && !canSettle ? requestAnimationFrame(loop) : 0
     }
 
+    // ResizeObserver re-measures on any layout shift (window resize,
+    // font swap, image load, etc.) without polling.
+    const ro = new ResizeObserver(measure)
+    ro.observe(container)
+
     const io = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting
-      if (visible) startLoop()
-      else { cancelAnimationFrame(raf); raf = 0 }
+      if (visible) {
+        measure()    // Re-measure on entry (lazy images may have loaded)
+        startLoop()
+      } else {
+        cancelAnimationFrame(raf)
+        raf = 0
+      }
     }, { threshold: 0 })
 
     io.observe(container)
+    measure() // Initial measurement (refs populated before useEffect runs)
 
     return () => {
       cancelAnimationFrame(raf)
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('scroll', onScroll)
+      ro.disconnect()
       io.disconnect()
       cardsRef.current.forEach(el => {
         if (!el) return
