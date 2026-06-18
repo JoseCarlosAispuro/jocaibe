@@ -4,9 +4,8 @@ import { useRef, useEffect } from 'react'
 import { motion } from 'motion/react'
 import { useLenis } from 'lenis/react'
 import { useViewport } from '@/app/hooks/useViewport'
-import { openContactModal } from '@/app/lib/contactModal'
-
-const EASE = [0.2, 0.7, 0.2, 1] as [number, number, number, number]
+import { openContactModal } from '@/app/helpers/contactModal'
+import { EASE } from '@/app/helpers/constants'
 
 const RIPPLES = [
   { delay: 0,   repeatDelay: 0.8 },

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
+import { useLenis } from 'lenis/react'
 import { useViewport } from '@/app/hooks/useViewport'
 
 interface SkillGroup {
@@ -14,7 +15,12 @@ interface SpringEl extends HTMLElement {
 
 const SkillsCloud = ({ groups }: { groups: SkillGroup[] }) => {
   const chipRefs = useRef<(HTMLSpanElement | null)[]>([])
-  const { fine, hover, reduce } = useViewport()
+  const { fine, hover, reduce, vw } = useViewport()
+  // Stable ref to the measure fn — updated inside the effect so the Lenis
+  // callback (defined at component level) can re-measure on scroll.
+  const measureRef = useRef<() => void>(() => {})
+
+  useLenis(() => { measureRef.current() })
 
   useEffect(() => {
     if (reduce || !fine || !hover) return
@@ -36,6 +42,8 @@ const SkillsCloud = ({ groups }: { groups: SkillGroup[] }) => {
     }
 
     const onMove = (e: MouseEvent) => { mx = e.clientX; my = e.clientY }
+
+    measureRef.current = measure
 
     const loop = () => {
       const list = chipRefs.current
@@ -74,16 +82,16 @@ const SkillsCloud = ({ groups }: { groups: SkillGroup[] }) => {
     measure()
     loop()
     window.addEventListener('mousemove', onMove)
-    window.addEventListener('resize', measure, { passive: true })
-    window.addEventListener('scroll', measure, { passive: true })
 
     return () => {
+      measureRef.current = () => {}
       cancelAnimationFrame(raf)
       window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('resize', measure)
-      window.removeEventListener('scroll', measure)
     }
   }, [fine, hover, reduce])
+
+  // Re-measure chip positions when viewport width changes (replaces native resize listener)
+  useEffect(() => { measureRef.current() }, [vw])
 
   const offsets: number[] = []
   let acc = 0

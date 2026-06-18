@@ -5,10 +5,11 @@ import { useLenis } from 'lenis/react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useViewport } from '@/app/hooks/useViewport'
 import SectionHeading from '@/app/partials/SectionHeading'
-import { openContactModal } from '@/app/lib/contactModal'
-import { EASE, HEARTBEAT_SCALE, HEARTBEAT_TIMES } from '@/app/lib/constants'
+import { openContactModal } from '@/app/helpers/contactModal'
+import { EASE, HEARTBEAT_SCALE, HEARTBEAT_TIMES } from '@/app/helpers/constants'
 import TimelineCurrent from './TimelineCurrent'
 import TimelineNode from './TimelineNode'
+import ArrowRight from '@/app/icons/ArrowRight'
 
 export interface Role {
   company: string
@@ -75,9 +76,15 @@ const Timeline = ({ data }: { data: TimelineData }) => {
   }, [])
 
   // ── Mobile refs ──────────────────────────────────────────
-  const mobileSectionRef = useRef<HTMLDivElement>(null)
-  const mobileFillRef    = useRef<HTMLDivElement>(null)
+  const mobileSectionRef  = useRef<HTMLDivElement>(null)
+  const mobileFillRef     = useRef<HTMLDivElement>(null)
   const [activeIdx, setActiveIdx] = useState(0)
+  // Scrub refs — track last committed index and last scroll direction
+  // so we can apply hysteresis: advance at 65% through a step, retreat at 35%.
+  // This creates a 30% dwell zone where the state stays locked without
+  // requiring precise scroll position.
+  const scrubIdxRef      = useRef(0)
+  const lastProgressRef  = useRef(0)
 
   // Scroll progress through the mobile section → active index.
   // Section top reaching the viewport top = progress 0.
@@ -85,17 +92,29 @@ const Timeline = ({ data }: { data: TimelineData }) => {
   const mobileUpdate = useCallback(() => {
     const section = mobileSectionRef.current
     if (!section) return
-    const rect        = section.getBoundingClientRect()
-    const scrolled    = Math.max(0, -rect.top)
-    const totalRoom   = Math.max(1, rect.height - window.innerHeight)
-    const progress    = Math.min(1, scrolled / totalRoom)
-    const idx         = Math.min(total - 1, Math.floor(progress * total))
+    const rect      = section.getBoundingClientRect()
+    const scrolled  = Math.max(0, -rect.top)
+    const totalRoom = Math.max(1, rect.height - window.innerHeight)
+    const progress  = Math.min(1, scrolled / totalRoom)
 
-    setActiveIdx(idx)
+    // Hysteresis: direction determines which threshold applies.
+    // Going forward → advance when 65% through a step (floor(rawStep + 0.35))
+    // Going backward → retreat when 35% into a step (ceil(rawStep − 0.35))
+    const rawStep  = progress * total
+    const goingFwd = progress >= lastProgressRef.current
+    lastProgressRef.current = progress
+
+    const cur = scrubIdxRef.current
+    const next = goingFwd
+      ? Math.min(total - 1, Math.max(cur, Math.floor(rawStep + 0.35)))
+      : Math.max(0,         Math.min(cur, Math.ceil(rawStep  - 0.35)))
+
+    scrubIdxRef.current = next
+    setActiveIdx(next)
 
     if (mobileFillRef.current) {
-      const pct = total > 1 ? (idx / (total - 1)) * 100 : 100
-      mobileFillRef.current.style.width = `${pct}%`
+      // Drive fill with raw progress so it moves continuously with scroll
+      mobileFillRef.current.style.width = `${progress * 100}%`
     }
   }, [total])
 
@@ -114,7 +133,7 @@ const Timeline = ({ data }: { data: TimelineData }) => {
       <div
         ref={mobileSectionRef}
         className="md:hidden"
-        style={{ minHeight: `calc(180px + ${total * 55}vh)` }}
+        style={{ minHeight: `calc(180px + ${total * 80}vh)` }}
       >
         {/* Sticky block — heading, navigator and content all stick together */}
         <div className="sticky top-14 bg-(--bg-0) px-(--gutter) pt-8 pb-20">
@@ -136,7 +155,7 @@ const Timeline = ({ data }: { data: TimelineData }) => {
             {/* Fill */}
             <div
               ref={mobileFillRef}
-              className="absolute left-0 top-[6px] h-px w-0 bg-[linear-gradient(90deg,var(--accent),var(--accent-soft))] shadow-[0_0_8px_var(--accent)] transition-[width] duration-[420ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]"
+              className="absolute left-0 top-[6px] h-px w-0 bg-[linear-gradient(90deg,var(--accent),var(--accent-soft))] shadow-[0_0_8px_var(--accent)]"
             />
             {/* Dots */}
             <div className="relative flex justify-between">
@@ -252,9 +271,7 @@ const Timeline = ({ data }: { data: TimelineData }) => {
                       className="inline-flex items-center gap-3 rounded-full bg-(--accent) text-(--bg-0) font-(--font-mono) text-[13px] tracking-[0.08em] uppercase font-medium px-7 py-5"
                     >
                       Get in touch
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                      <ArrowRight />
                     </motion.button>
                   </motion.div>
                 </div>

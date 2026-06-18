@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+# ── jocaibe standards check — runs on staged TS/TSX/CSS/SCSS/SASS files ──
+bash .claude/scripts/check-standards.sh
+
+# ── Color contrast check — runs when globals.css is staged ──────────────────
+if git diff --cached --name-only | grep -q "globals.css"; then
+  node scripts/check-contrast.mjs
+fi

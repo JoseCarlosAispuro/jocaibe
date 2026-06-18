@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'motion/react'
 import ChevronLeft from '@/app/icons/ChevronLeft'
 import ChevronRight from '@/app/icons/ChevronRight'
 import VideoEl from './VideoEl'
-import { assetUrl } from '@/app/lib/assets'
-import { EASE } from '@/app/lib/constants'
+import { assetUrl } from '@/app/helpers/assets'
+import { EASE } from '@/app/helpers/constants'
 
 const isVideo = (src: string) => /\.(mp4|webm|ogg)$/i.test(src)
 

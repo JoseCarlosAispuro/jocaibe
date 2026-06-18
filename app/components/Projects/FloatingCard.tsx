@@ -1,6 +1,6 @@
 'use client'
 
-import { assetUrl } from '@/app/lib/assets'
+import { assetUrl } from '@/app/helpers/assets'
 import VideoEl from './VideoEl'
 import type { Project } from '@/app/types/project'
 import RightArrow from '@/app/icons/RightArrow'

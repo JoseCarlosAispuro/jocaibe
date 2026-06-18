@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useEffect, useCallback } from 'react'
+import { useLenis } from 'lenis/react'
 import { useViewport } from './useViewport'
 
 export interface FloatItemConfig {
@@ -40,8 +41,20 @@ export const useFloatingCards = (
   // recreated on every render.
   const configsRef = useRef(configs)
   configsRef.current = configs
+  // Lenis scroll value — kept current by useLenis callback, read inside
+  // measure() and the RAF loop without touching window.scrollY.
+  const scrollYRef    = useRef(0)
+  // Stable pointer to startLoop — updated after each useEffect so the
+  // Lenis callback (defined at hook level) can trigger restarts.
+  const startLoopRef  = useRef<() => void>(() => {})
 
   const { reduce, fine } = useViewport()
+
+  // Drive scroll-dependent updates through Lenis (replaces native listener)
+  useLenis(({ scroll }) => {
+    scrollYRef.current = scroll
+    startLoopRef.current()
+  })
 
   useEffect(() => {
     appearRef.current = configs.map(() => 0)
@@ -57,7 +70,7 @@ export const useFloatingCards = (
     // font-swap shifts), and once per ResizeObserver callback.
     // NEVER called inside the RAF loop.
     const measure = () => {
-      const scrollY = window.scrollY
+      const scrollY = scrollYRef.current
       const cards   = cardsRef.current
       for (let i = 0; i < cards.length; i++) {
         const el = cards[i]
@@ -75,21 +88,20 @@ export const useFloatingCards = (
     const startLoop = () => {
       if (raf === 0 && visible) raf = requestAnimationFrame(loop)
     }
+    startLoopRef.current = startLoop
 
     const onMove = (e: MouseEvent) => {
       mx = e.clientX / window.innerWidth  - 0.5
       my = e.clientY / window.innerHeight - 0.5
       startLoop()
     }
-    const onScroll = () => startLoop()
 
     if (fine && !reduce) window.addEventListener('mousemove', onMove, { passive: true })
-    window.addEventListener('scroll', onScroll, { passive: true })
 
     // ── RAF loop ─────────────────────────────────────────────────────────
     // All position data comes from cached refs — no layout reads here.
     const loop = (now: number) => {
-      const scrollY = window.scrollY
+      const scrollY = scrollYRef.current
       const vh      = window.innerHeight
       const t       = now * 0.001
       const cards   = cardsRef.current
@@ -162,9 +174,9 @@ export const useFloatingCards = (
     measure() // Initial measurement (refs populated before useEffect runs)
 
     return () => {
+      startLoopRef.current = () => {}
       cancelAnimationFrame(raf)
       window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('scroll', onScroll)
       ro.disconnect()
       io.disconnect()
       cardsRef.current.forEach(el => {

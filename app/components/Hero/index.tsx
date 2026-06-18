@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { initHeroShader } from '@/app/helpers/heroShader'
+import { useViewport } from '@/app/hooks/useViewport'
 import useParallax from '@/app/hooks/useParallax'
 import Reveal from '@/app/partials/Reveal'
 import KineticHeadline from './KineticHeadline'
@@ -31,14 +32,22 @@ interface HeroProps {
 
 const Hero = ({ data }: HeroProps) => {
     const { headline, meta, copy, cta } = data
-    const canvasRef = useRef<HTMLCanvasElement>(null)
+    const canvasRef   = useRef<HTMLCanvasElement>(null)
+    const shaderRef   = useRef<ReturnType<typeof initHeroShader> | null>(null)
     const { sectionRef, contentRef } = useParallax()
+    const { vw, vh } = useViewport()
 
     useEffect(() => {
         const canvas = canvasRef.current
         if (!canvas) return
-        return initHeroShader(canvas)
+        shaderRef.current = initHeroShader(canvas)
+        return () => { shaderRef.current?.cleanup() }
     }, [])
+
+    // Route viewport resize through useViewport — no native listener in heroShader
+    useEffect(() => {
+        shaderRef.current?.handleResize()
+    }, [vw, vh])
 
     return (
         <section

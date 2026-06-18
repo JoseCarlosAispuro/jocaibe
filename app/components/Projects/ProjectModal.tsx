@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from 'motion/react'
 import MediaCarousel from './MediaCarousel'
 import VideoEl from './VideoEl'
 import Close from '@/app/icons/Close'
+import ExternalLink from '@/app/icons/ExternalLink'
 import ChevronLeft from '@/app/icons/ChevronLeft'
 import ChevronRight from '@/app/icons/ChevronRight'
-import { assetUrl } from '@/app/lib/assets'
-import { EASE } from '@/app/lib/constants'
+import { assetUrl } from '@/app/helpers/assets'
+import { EASE } from '@/app/helpers/constants'
 import type { Project } from '@/app/types/project'
 
 const isVideo = (src: string) => /\.(mp4|webm|ogg)$/i.test(src)
@@ -332,13 +333,9 @@ const ProjectModal = ({ project, onClose }: ProjectModalProps) => {
                           className="group flex items-center justify-between gap-4 border-b border-(--border) py-[10px] text-[14px] text-(--fg-0) transition-colors duration-[180ms] hover:text-(--accent)"
                         >
                           <span>{label}</span>
-                          <svg
-                            aria-hidden="true"
-                            width="12" height="12" viewBox="0 0 24 24" fill="none"
-                            className="shrink-0 text-(--fg-3) transition-colors duration-[180ms] group-hover:text-(--accent)"
-                          >
-                            <path d="M7 17L17 7M9 7h8v8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
+                          <span className="shrink-0 text-(--fg-3) transition-colors duration-[180ms] group-hover:text-(--accent) inline-flex">
+                            <ExternalLink />
+                          </span>
                         </a>
                       ))}
                     </div>

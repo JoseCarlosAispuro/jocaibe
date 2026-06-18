@@ -6,7 +6,7 @@ import Reveal from '@/app/partials/Reveal'
 import Button from '@/app/partials/Button'
 import ContactRow, { ContactLink } from '@/app/components/Contact/ContactRow'
 import ContactModal from './ContactModal'
-import { CONTACT_MODAL_EVENT } from '@/app/lib/contactModal'
+import { CONTACT_MODAL_EVENT } from '@/app/helpers/contactModal'
 
 interface ContactData {
     eyebrow: string

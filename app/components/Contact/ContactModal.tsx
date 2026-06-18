@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import Close from '@/app/icons/Close'
-import { EASE } from '@/app/lib/constants'
+import Checkmark from '@/app/icons/Checkmark'
+import Spinner from '@/app/icons/Spinner'
+import ArrowRight from '@/app/icons/ArrowRight'
+import { EASE } from '@/app/helpers/constants'
 
 type Status = 'idle' | 'sending' | 'success' | 'error'
 
@@ -151,10 +154,8 @@ const ContactModal = ({ onClose }: ContactModalProps) => {
                 transition={{ duration: 0.32, ease: EASE }}
                 className="flex flex-col items-center gap-4 py-8 text-center"
               >
-                <span className="flex size-12 items-center justify-center rounded-full bg-(--accent)">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M5 13l4 4L19 7" stroke="var(--bg-0)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                <span className="flex size-12 items-center justify-center rounded-full bg-(--accent) text-(--bg-0)">
+                  <Checkmark />
                 </span>
                 <div>
                   <div className="font-(--font-display) mb-1 text-[20px] font-medium text-(--fg-0)">Message sent</div>
@@ -231,17 +232,13 @@ const ContactModal = ({ onClose }: ContactModalProps) => {
                 >
                   {status === 'sending' ? (
                     <>
-                      <svg aria-hidden="true" className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="32" strokeDashoffset="12"/>
-                      </svg>
+                      <span className="animate-spin inline-flex"><Spinner /></span>
                       Sending…
                     </>
                   ) : (
                     <>
                       Send message
-                      <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                      <ArrowRight />
                     </>
                   )}
                 </button>

@@ -1,11 +1,11 @@
 'use client'
 
 import {useState, useEffect, useRef} from 'react'
-import { openContactModal } from '@/app/lib/contactModal'
+import { openContactModal } from '@/app/helpers/contactModal'
 import {useLenis} from 'lenis/react'
 import clsx from 'clsx'
 import { motion } from 'motion/react'
-import BrandWordmark from '@/app/brand/BrandWordmark'
+import BrandWordmark from '@/app/partials/BrandWordmark'
 import Hamburger from "@/app/icons/Hamburger";
 import Close from "@/app/icons/Close";
 import Link from "next/link";
@@ -58,11 +58,12 @@ const Navigation = ({links, email}: NavProps) => {
         lenis ? lenis.scrollTo(el as HTMLElement) : el.scrollIntoView({ behavior: 'smooth' })
     }
 
-    // Seed initial state (Lenis hasn't fired yet on mount)
+    // Seed initial state from Lenis instance (falls back to 0 before first tick)
     useEffect(() => {
-        prevScrollRef.current = window.scrollY
-        setScrolled(window.scrollY > 24)
-    }, [])
+        const scroll = lenis?.scroll ?? 0
+        prevScrollRef.current = scroll
+        setScrolled(scroll > 24)
+    }, [lenis])
 
     useEffect(() => {
         document.body.style.overflow = menuOpen ? 'hidden' : ''

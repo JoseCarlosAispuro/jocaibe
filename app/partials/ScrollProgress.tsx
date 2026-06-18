@@ -7,9 +7,11 @@ import { useViewport } from '@/app/hooks/useViewport'
 const ScrollProgress = () => {
   const ref = useRef<HTMLDivElement>(null)
   const { vh } = useViewport()
+  const scrollRef = useRef(0)
 
   // Lenis provides accurate progress on every smoothed scroll tick
-  useLenis(({ progress }) => {
+  useLenis(({ progress, scroll }) => {
+    scrollRef.current = scroll
     if (ref.current) {
       ref.current.style.transform = `scaleX(${progress})`
     }
@@ -18,7 +20,7 @@ const ScrollProgress = () => {
   // Re-sync when viewport height changes (resize may shift scrollHeight)
   useEffect(() => {
     const h = document.documentElement.scrollHeight - vh
-    const p = h > 0 ? window.scrollY / h : 0
+    const p = h > 0 ? scrollRef.current / h : 0
     if (ref.current) ref.current.style.transform = `scaleX(${Math.max(0, Math.min(1, p))})`
   }, [vh])
 

@@ -1,6 +1,7 @@
 // Canvas2D interactive constellation dot-field background.
 // Mouse + touch reactive, reduced-motion aware.
-// Returns a cleanup function — call it on unmount.
+// Returns { cleanup, handleResize } — call cleanup on unmount and handleResize
+// whenever the viewport changes (route through useViewport in the host component).
 
 interface Dot {
   bx: number
@@ -32,8 +33,6 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
   let visible = true
   const t0 = performance.now()
   let px = -9999, py = -9999, tx = -9999, ty = -9999, active = false
-  // Cached canvas offset — updated on resize, avoids getBoundingClientRect() per mouse event
-  let canvasLeft = 0, canvasTop = 0
   let dots: Dot[] = []
   let vignette: CanvasGradient | null = null
   // Mobile ghost cursor: lerped center that shifts to the last tap position
@@ -68,9 +67,6 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
     const rect = canvas.getBoundingClientRect()
     w = rect.width
     h = rect.height
-    // Cache offset so setPointer never needs to call getBoundingClientRect()
-    canvasLeft = rect.left
-    canvasTop  = rect.top
     canvas.width  = Math.floor(w * dpr)
     canvas.height = Math.floor(h * dpr)
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -82,8 +78,9 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
   }
 
   const setPointer = (cx: number, cy: number) => {
-    tx = cx - canvasLeft
-    ty = cy - canvasTop
+    const rect = canvas.getBoundingClientRect()
+    tx = cx - rect.left
+    ty = cy - rect.top
     active = true
   }
 
@@ -238,13 +235,6 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
     raf = visible ? requestAnimationFrame(draw) : 0
   }
 
-  // Keep canvas offset in sync with scroll (it's cached on resize only)
-  const onScroll = () => {
-    const rect = canvas.getBoundingClientRect()
-    canvasLeft = rect.left
-    canvasTop  = rect.top
-  }
-
   const io = new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting
     if (visible && raf === 0) {
@@ -256,26 +246,27 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
     }
   }, { threshold: 0 })
 
+  // Unified resize handler — resize canvas + reset mobile ghost state.
+  // No native 'resize' listener here; the host component routes viewport
+  // changes through useViewport and calls handleResize() via useEffect.
+  const handleResize = () => {
+    resize()
+    if (!fine) { ghostCX = -1; ghostCY = -1; tapDest = null; tapTimeRef = -1 }
+  }
+
   resize()
-  window.addEventListener('resize', resize)
-  window.addEventListener('scroll', onScroll, { passive: true })
   if (fine) {
     window.addEventListener('mousemove', onMove)
     canvas.addEventListener('mouseleave', onLeave)
   } else {
-    // Reset ghost centre on resize so it re-seeds from new canvas dimensions
-    const onResizeMobile = () => { ghostCX = -1; ghostCY = -1; tapDest = null; tapTimeRef = -1 }
-    window.addEventListener('resize', onResizeMobile)
     window.addEventListener('touchstart', onTap, { passive: true })
   }
   io.observe(canvas)
   draw()
 
-  return () => {
+  const cleanup = () => {
     cancelAnimationFrame(raf)
     io.disconnect()
-    window.removeEventListener('resize', resize)
-    window.removeEventListener('scroll', onScroll)
     if (fine) {
       window.removeEventListener('mousemove', onMove)
       canvas.removeEventListener('mouseleave', onLeave)
@@ -283,4 +274,6 @@ export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
       window.removeEventListener('touchstart', onTap)
     }
   }
+
+  return { cleanup, handleResize }
 }

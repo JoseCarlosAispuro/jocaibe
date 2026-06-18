@@ -36,17 +36,16 @@ app/
 │   ├── page.json
 │   ├── nav.json
 │   └── hero.json
-├── helpers/             # Pure utilities and non-hook logic (shaders, formatters)
+├── helpers/             # Pure utilities and non-hook logic (shaders, formatters, event buses)
+│   ├── constants.ts     # Shared animation constants (EASE, HEARTBEAT_*)
+│   ├── assets.ts        # Asset URL helpers
+│   └── contactModal.ts  # Cross-component event bus helpers
 ├── hooks/               # Custom React hooks
 ├── icons/               # SVG icon components — one file per icon, PascalCase
 │   ├── Close.tsx        # Accept optional `size` prop
 │   ├── ChevronLeft.tsx
 │   ├── ChevronRight.tsx
 │   └── RightArrow.tsx
-├── lib/
-│   ├── constants.ts     # Shared animation constants (EASE, HEARTBEAT_*)
-│   ├── assets.ts        # Asset URL helpers
-│   └── contactModal.ts  # Cross-component event bus helpers
 ├── partials/            # Global reusable UI: Navigation, SectionHeading, LenisProvider
 ├── types/               # Shared TypeScript interfaces/types
 ├── styles/
@@ -58,10 +57,10 @@ app/
 ### Rules
 - **`components/`** — page-level sections only. Each section is a folder (`Hero/`, `Timeline/`). Sub-components tightly coupled to a section live in the same folder.
 - **`partials/`** — cross-section UI (Navigation, SectionHeading, LenisProvider, Button, CursorFX). Not page-specific.
-- **`helpers/`** — pure functions, no hooks. Canvas shaders, animation utilities, formatters.
+- **`helpers/`** — pure functions and non-hook logic. Canvas shaders, animation utilities, formatters, cross-component event buses. No React hooks.
 - **`hooks/`** — custom hooks only (`useReveal`, `useViewport`, `useMagnetic`, `useParallax`, etc.).
 - **`icons/`** — one file per icon, named in PascalCase. Icons accept a `size` prop and always set `aria-hidden="true"`.
-- **`lib/constants.ts`** — shared animation constants. Never redefine `EASE`, `HEARTBEAT_SCALE`, or `HEARTBEAT_TIMES` inline in components.
+- **`helpers/constants.ts`** — shared animation constants. Never redefine `EASE`, `HEARTBEAT_SCALE`, or `HEARTBEAT_TIMES` inline in components.
 - **`data/`** — all copy/content as JSON. Components never fetch their own data.
 - **`types/`** — shared interfaces exported and imported across components.
 
@@ -208,7 +207,7 @@ export default function LenisProvider({ children }: { children: React.ReactNode 
 
 ---
 
-## 6. Shared Animation Constants (`app/lib/constants.ts`)
+## 6. Shared Animation Constants (`app/helpers/constants.ts`)
 
 ```ts
 export const EASE = [0.2, 0.7, 0.2, 1] as [number, number, number, number]
@@ -249,15 +248,74 @@ useEffect(() => {
 }, [update])
 ```
 
+### Reading scroll position in a RAF loop (no native `window.scrollY`)
+When a RAF loop or `measure()` function needs the current scroll position, source it from a Lenis ref — never from `window.scrollY`:
+
+```ts
+// At hook/component level
+const scrollYRef = useRef(0)
+useLenis(({ scroll }) => { scrollYRef.current = scroll })
+
+// Inside useEffect RAF loop or measure()
+const scrollY = scrollYRef.current  // ✓ — never window.scrollY
+```
+
+### Re-measuring positions on scroll (via a stable ref)
+When an effect-scoped `measure()` function needs to run on every Lenis tick, expose it through a stable ref:
+
+```ts
+// At component level (outside useEffect)
+const measureRef = useRef<() => void>(() => {})
+useLenis(() => { measureRef.current() })
+
+// Inside useEffect
+const measure = () => { /* read DOM positions */ }
+measureRef.current = measure  // keep ref current
+
+return () => { measureRef.current = () => {} }  // clean up on unmount
+```
+
+### Restarting a RAF loop from Lenis scroll (instead of a native listener)
+```ts
+// At hook level (outside useEffect)
+const startLoopRef = useRef<() => void>(() => {})
+useLenis(() => { startLoopRef.current() })
+
+// Inside useEffect
+const startLoop = () => { if (raf === 0 && visible) raf = requestAnimationFrame(loop) }
+startLoopRef.current = startLoop   // keep ref current
+
+return () => { startLoopRef.current = () => {} }
+```
+
 ### Scrolling to a section
 ```ts
 const lenis = useLenis()
 lenis?.scrollTo(element)   // NOT window.lenis — that doesn't exist
 ```
 
+### Vanilla JS functions (non-React — e.g. canvas shaders)
+Plain functions can't call `useLenis`. Use `getBoundingClientRect()` in event handlers (mousemove, resize) instead of caching offsets that need scroll-sync:
+
+```ts
+// ✓ — correct: read position on each pointer event (not in RAF)
+const setPointer = (cx: number, cy: number) => {
+  const rect = canvas.getBoundingClientRect()
+  tx = cx - rect.left
+  ty = cy - rect.top
+}
+
+// ✗ — wrong: caching canvas offset + a native scroll listener to re-sync it
+let canvasLeft = 0
+window.addEventListener('scroll', () => {
+  canvasLeft = canvas.getBoundingClientRect().left
+})
+```
+
 ### Rules
-- **Never** use `window.addEventListener('scroll', ...)` — always use `useLenis`.
-- **Never** read `window.scrollY` inside a RAF loop — read it from Lenis callback or `el.getBoundingClientRect()` on demand.
+- **Never** use `window.addEventListener('scroll', ...)` — use `useLenis` in React, or `getBoundingClientRect()` in event handlers in vanilla JS.
+- **Never** read `window.scrollY` in a RAF loop or `measure()` — source from `scrollYRef` kept current by `useLenis`.
+- **Never** read `window.scrollY` for initial state seed — use `lenis?.scroll ?? 0`.
 - **Never** run a secondary RAF loop to smooth scroll values — Lenis already does it.
 
 ---
@@ -271,7 +329,7 @@ All JS-driven animations use `motion/react`. CSS transitions are acceptable for 
 
 ```tsx
 import { motion, AnimatePresence } from 'motion/react'
-import { EASE } from '@/app/lib/constants'
+import { EASE } from '@/app/helpers/constants'
 
 // Enter/exit
 <AnimatePresence>
@@ -332,6 +390,34 @@ const loop = () => {
 - Always add `loading="lazy"` to images that are not above the fold.
 - Add `alt` text to all `<img>` elements. Decorative images use `alt=""`.
 
+### Resize handling — always route through `useViewport`
+
+**Never** add `window.addEventListener('resize', ...)` in components, hooks, or helpers. `useViewport` is the one singleton resize listener — route through it:
+
+```tsx
+// React component / hook — use vw/vh as useEffect deps
+const { vw, vh } = useViewport()
+useEffect(() => { measure() }, [vw, vh])
+
+// Vanilla JS helper — expose handleResize, let the host component call it
+// initMyHelper(el) → { cleanup: () => void, handleResize: () => void }
+// Host:
+const helperRef = useRef<ReturnType<typeof initMyHelper> | null>(null)
+useEffect(() => {
+  helperRef.current = initMyHelper(el)
+  return () => helperRef.current?.cleanup()
+}, [])
+useEffect(() => { helperRef.current?.handleResize() }, [vw, vh])
+```
+
+**`ResizeObserver` is the exception** — use it when you need to watch a specific element's own dimensions (not the viewport). It fires on element layout changes that `window.resize` misses (font swaps, image loads, etc.).
+
+```ts
+const ro = new ResizeObserver(measure)
+ro.observe(containerRef.current)
+// cleanup: ro.disconnect()
+```
+
 ### Event listener cleanup
 - Always return cleanup functions from `useEffect` that remove event listeners and cancel RAF.
 
@@ -349,7 +435,32 @@ const loop = () => {
 
 ---
 
-## 11. ADA / Accessibility
+## 11. Color Contrast — WCAG 2.1 AA
+
+Run `pnpm check-contrast` to audit all design-token color pairs. The checker (`scripts/check-contrast.mjs`) auto-runs on pre-commit when `globals.css` is staged.
+
+### Requirements by text type
+
+| Text type | Min ratio (AA) | Min ratio (AAA) |
+|---|---|---|
+| Normal text (<18px regular, <14px bold) | **4.5:1** | 7:1 |
+| Large text (≥18px regular or ≥14px bold) | **3:1** | 4.5:1 |
+| UI components (icons, borders, focus rings) | **3:1** | — |
+| Decorative / disabled / placeholder | none | — |
+
+### Token rules
+- **Always** use `--bg-0` (dark) as text color on `--accent` or `--danger` backgrounds. Never `--fg-0` (light text on yellow/red fails).
+- `--fg-0`, `--fg-1`, `--fg-2` pass AA/AAA on all background tokens — safe for body text everywhere.
+- `--fg-3` passes the UI component 3:1 rule on `--bg-0`/`--bg-1` — safe for placeholders, labels, muted icons.
+- `--fg-4` is decorative only (2.48:1) — never use for readable text.
+- Background-on-background pairs (`--bg-1` on `--bg-0` etc.) do not meet the UI 3:1 rule — layer differentiation must rely on borders or shadows, not fill color alone.
+
+### Adding new tokens
+After editing `:root` in `globals.css`, run `pnpm check-contrast` and fix any required failures before committing.
+
+---
+
+## 12. ADA / Accessibility
 
 ### Every component must have:
 - `aria-label` on all icon-only buttons (close, nav hamburger, carousel prev/next).
@@ -421,7 +532,7 @@ import { useCallback } from 'react'
 import { useLenis } from 'lenis/react'
 import { motion } from 'motion/react'
 import SectionHeading from '@/app/partials/SectionHeading'
-import { EASE } from '@/app/lib/constants'
+import { EASE } from '@/app/helpers/constants'
 import type { MySectionData } from '@/app/types/my-section'
 
 export default function MySection({ data }: { data: MySectionData }) {
@@ -461,7 +572,7 @@ className="text-(--fg-0) hover:border-(--accent) border-(--border) flex rounded-
 - [ ] Write `styles/globals.css` with tokens, `@layer base` reset, `.container`, `.mono`, keyframes
 - [ ] Write `layout.tsx` with fonts, `lenis/dist/lenis.css`, `LenisProvider`
 - [ ] Create `app/partials/LenisProvider.tsx`
-- [ ] Create `app/lib/constants.ts` with `EASE`, `HEARTBEAT_SCALE`, `HEARTBEAT_TIMES`
+- [ ] Create `app/helpers/constants.ts` with `EASE`, `HEARTBEAT_SCALE`, `HEARTBEAT_TIMES`
 - [ ] Create `app/hooks/useViewport.ts` (reduce motion, pointer fine, hover, vh)
 - [ ] Create `app/partials/SectionHeading.tsx`
 - [ ] Create `app/partials/Navigation.tsx`

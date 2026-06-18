@@ -1,12 +1,16 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
-const FROM    = 'Portfolio Contact <contact@jocaibe.com>'
-const TO      = 'contact@jocaibe.com'
+const resend     = new Resend(process.env.RESEND_API_KEY)
+const TO_ADDRESS = process.env.TO_ADDRESS
+const FROM       = 'Portfolio Contact <no-reply@jocaibe.com>'
 
 export async function POST(request: Request) {
+  if (!TO_ADDRESS) {
+    console.error('TO_ADDRESS env variable is not set')
+    return NextResponse.json({ error: 'Server misconfiguration.' }, { status: 500 })
+  }
+
   const body = await request.json().catch(() => null)
   const { name, email, message } = body ?? {}
 
@@ -21,15 +25,16 @@ export async function POST(request: Request) {
 
   try {
     await resend.emails.send({
-      from:     FROM,
-      to:       TO,
-      replyTo:  email,
-      subject:  `New message from ${name}`,
-      text:     `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
+      from:    FROM,
+      to:      TO_ADDRESS,
+      replyTo: email,
+      subject: `New message from ${name}`,
+      text:    `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
     })
 
     return NextResponse.json({ success: true })
-  } catch {
+  } catch (err) {
+    console.error('Resend error:', err)
     return NextResponse.json({ error: 'Failed to send. Please try again.' }, { status: 500 })
   }
 }

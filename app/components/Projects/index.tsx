@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { openContactModal } from '@/app/lib/contactModal'
+import { openContactModal } from '@/app/helpers/contactModal'
 import { AnimatePresence } from 'motion/react'
 import SectionHeading from '@/app/partials/SectionHeading'
 import ProjectModal from './ProjectModal'

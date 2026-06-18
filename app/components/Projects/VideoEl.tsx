@@ -2,7 +2,7 @@
 // This component lists MP4 first so Safari picks it up, then WebM as fallback.
 // Upload both foo.mp4 and foo.webm to R2 for full cross-browser support.
 
-import { assetUrl } from '@/app/lib/assets'
+import { assetUrl } from '@/app/helpers/assets'
 
 interface VideoElProps {
   src: string           // original src (may be .webm, .mp4, etc.)
