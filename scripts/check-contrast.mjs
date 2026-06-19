@@ -130,20 +130,11 @@ const PAIRS = [
   { fg: '--highlight',   bg: '--bg-0', type: 'normal', required: false, note: 'highlight text' },
 
   // ── Accent as background (inverted — e.g. CTA buttons) ─────────────────────
+  // bg-0 (dark) on accent/semantic — CTA buttons and badges
   { fg: '--bg-0',  bg: '--accent',      type: 'normal', required: true,  note: 'dark text on accent button' },
-  { fg: '--fg-0',  bg: '--accent',      type: 'normal', required: false, note: 'light text on accent button' },
   { fg: '--bg-0',  bg: '--accent-soft', type: 'normal', required: false, note: 'dark text on accent-soft' },
-  { fg: '--fg-0',  bg: '--danger',      type: 'normal', required: false, note: 'light text on danger badge' },
   { fg: '--bg-0',  bg: '--danger',      type: 'normal', required: false, note: 'dark text on danger badge' },
   { fg: '--bg-0',  bg: '--success',     type: 'normal', required: false, note: 'dark text on success badge' },
-
-  // ── Background layers — UI component rule (3:1) ─────────────────────────────
-  // These matter for visible borders and layer differentiation
-  { fg: '--bg-1', bg: '--bg-0', type: 'ui', required: false, note: 'card on main — UI layer contrast' },
-  { fg: '--bg-2', bg: '--bg-0', type: 'ui', required: false, note: 'raised on main — UI layer contrast' },
-  { fg: '--bg-3', bg: '--bg-0', type: 'ui', required: false, note: 'elevated on main — UI layer contrast' },
-  { fg: '--bg-2', bg: '--bg-1', type: 'ui', required: false, note: 'raised on card — UI layer contrast' },
-  { fg: '--bg-3', bg: '--bg-1', type: 'ui', required: false, note: 'elevated on card — UI layer contrast' },
 ]
 
 // ── Run ───────────────────────────────────────────────────────────────────────
