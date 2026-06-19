@@ -158,14 +158,14 @@ const SkillsCloud = ({ groups }: { groups: SkillGroup[] }) => {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeIdx}
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{
-              duration: 0.38,
-              ease: SMOOTH,
-              exit: { duration: 0.18, ease: SMOOTH_OUT },
+            variants={{
+              hidden: { opacity: 0, y: 14, transition: { duration: 0.18, ease: SMOOTH_OUT } },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.38, ease: SMOOTH } },
+              exit: { opacity: 0, y: -8, transition: { duration: 0.18, ease: SMOOTH_OUT } },
             }}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
           >
             <div
               className="flex flex-wrap gap-3"
