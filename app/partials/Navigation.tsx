@@ -6,8 +6,7 @@ import {useLenis} from 'lenis/react'
 import clsx from 'clsx'
 import { motion } from 'motion/react'
 import BrandWordmark from '@/app/partials/BrandWordmark'
-import Hamburger from "@/app/icons/Hamburger";
-import Close from "@/app/icons/Close";
+import MenuToggle from "@/app/icons/MenuToggle";
 import Link from "next/link";
 
 const MotionLink = motion.create(Link)
@@ -74,9 +73,10 @@ const Navigation = ({links, email}: NavProps) => {
 
     return (
         <>
+            {/* Nav always on top of the overlay */}
             <nav
                 className={clsx(
-                    'fixed top-0 left-0 right-0 z-50 border-b border-transparent transition-all duration-[520ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]',
+                    'fixed top-0 left-0 right-0 z-[80] border-b border-transparent transition-all duration-[520ms] ease-[cubic-bezier(0.2,0.7,0.2,1)]',
                     {'nav-scrolled': scrolled},
                     {'-translate-y-full': hidden && !menuOpen},
                 )}
@@ -109,36 +109,45 @@ const Navigation = ({links, email}: NavProps) => {
                             ))}
                         </div>
 
-                        {/* Hamburger — mobile */}
+                        {/* Hamburger / Close toggle — mobile */}
                         <button
                             className="sm:hidden w-11 h-11 rounded-full border border-(--border-strong) flex items-center justify-center text-(--fg-0)"
-                            aria-label="Open menu"
-                            onClick={() => setMenuOpen(true)}>
-                            <Hamburger/>
+                            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+                            onClick={() => setMenuOpen(prev => !prev)}>
+                            <MenuToggle open={menuOpen} />
                         </button>
                     </div>
                 </div>
             </nav>
 
-            {/* Mobile overlay */}
-            {menuOpen && (
-                <div
-                    className="fixed inset-0 z-[70] flex flex-col backdrop-blur-[10px] pt-5 px-(--gutter) pb-10 bg-[color-mix(in_oklab,var(--bg-0)_98%,transparent)]"
-                >
-                    <div className="flex items-center justify-between h-[52px]">
-                        <BrandWordmark />
-                        <button
-                            className="w-11 h-11 rounded-full border border-(--border-strong) flex items-center justify-center text-(--fg-0)"
-                            aria-label="Close menu"
-                            onClick={() => setMenuOpen(false)}>
-                            <Close/>
-                        </button>
-                    </div>
-
-                    <div className="flex-1 flex flex-col justify-center gap-1">
-                        {links.map(({label, href}, i) => (
+            {/* Mobile overlay — sits below the nav, slides up from off-screen */}
+            <motion.div
+                aria-hidden={!menuOpen}
+                className="fixed inset-0 z-[70] flex flex-col pt-[72px] px-(--gutter) pb-10 bg-[color-mix(in_oklab,var(--bg-0)_80%,transparent)] backdrop-blur-[12px] sm:hidden"
+                initial={false}
+                animate={{ y: menuOpen ? '0%' : '-100%' }}
+                transition={{
+                    duration: menuOpen ? 0.52 : 0.42,
+                    ease: menuOpen ? [0.32, 0.72, 0, 1] : [0.4, 0, 1, 1],
+                }}
+                style={{ pointerEvents: menuOpen ? 'auto' : 'none' }}
+            >
+                {/* Nav links — stagger in once panel is ~70% visible (~200ms into slide) */}
+                <div className="flex-1 flex flex-col justify-center gap-1">
+                    {links.map(({label, href}, i) => (
+                        <motion.div
+                            key={label}
+                            initial={false}
+                            animate={menuOpen
+                                ? { opacity: 1, y: 0 }
+                                : { opacity: 0, y: 24 }
+                            }
+                            transition={menuOpen
+                                ? { duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 + i * 0.08 }
+                                : { duration: 0.15, ease: [0.4, 0, 1, 1], delay: 0 }
+                            }
+                        >
                             <Link
-                                key={label}
                                 href={href}
                                 onClick={(e) => {
                                     if (href.startsWith('#')) {
@@ -147,28 +156,35 @@ const Navigation = ({links, email}: NavProps) => {
                                     }
                                     setMenuOpen(false)
                                 }}
-                                className="flex items-baseline gap-4 font-(--font-display) text-[clamp(40px,13vw,64px)] font-medium tracking-[-0.03em] text-(--fg-0) py-[10px] border-b border-(--border)"
+                                className="flex items-baseline font-(--font-display) text-[clamp(40px,13vw,64px)] font-medium tracking-[-0.03em] text-(--fg-0) py-[10px] border-b border-(--border)"
                             >
-                                <span className="mono text-(--accent) text-[12px]">0{i + 1}</span>
                                 {label}
                             </Link>
-                        ))}
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        <button
-                            onClick={() => { setMenuOpen(false); openContactModal() }}
-                            className="font-(--font-mono) text-[13px] text-(--fg-1) tracking-[0.04em] text-left"
-                        >
-                            {email} ↗
-                        </button>
-                        <span className="mono inline-flex items-center gap-2">
-              <span className="size-[7px] rounded-full bg-(--success)"/>
-              Available for Q3 2026
-            </span>
-                    </div>
+                        </motion.div>
+                    ))}
                 </div>
-            )}
+
+                {/* Footer — appears last in the sequence */}
+                <motion.div
+                    className="flex flex-col gap-2"
+                    initial={false}
+                    animate={menuOpen
+                        ? { opacity: 1, y: 0 }
+                        : { opacity: 0, y: 24 }
+                    }
+                    transition={menuOpen
+                        ? { duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 + links.length * 0.08 }
+                        : { duration: 0.15, ease: [0.4, 0, 1, 1], delay: 0 }
+                    }
+                >
+                    <button
+                        onClick={() => { setMenuOpen(false); openContactModal() }}
+                        className="inline-flex items-center gap-3 rounded-full bg-(--accent) text-(--bg-0) font-(--font-mono) text-[13px] tracking-[0.08em] uppercase font-medium px-7 py-4 w-full justify-center"
+                    >
+                        Get in touch
+                    </button>
+                </motion.div>
+            </motion.div>
         </>
     )
 }

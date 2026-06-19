@@ -58,10 +58,11 @@ const ContactModal = ({ onClose }: ContactModalProps) => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', onKey)
-    // Move focus to first input when modal opens
-    const frame = requestAnimationFrame(() => firstInputRef.current?.focus())
+    // Delay focus until after the open animation to avoid iOS keyboard
+    // resizing the viewport mid-animation and causing a position jump
+    const timer = setTimeout(() => firstInputRef.current?.focus(), 560)
     return () => {
-      cancelAnimationFrame(frame)
+      clearTimeout(timer)
       document.body.style.overflow = ''
       window.removeEventListener('keydown', onKey)
     }
@@ -112,19 +113,19 @@ const ContactModal = ({ onClose }: ContactModalProps) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.28, ease: 'linear' }}
-      className="fixed inset-0 z-[100] flex items-end justify-center overflow-y-auto p-0 backdrop-blur-[16px] bg-[color-mix(in_oklab,var(--bg-0)_82%,transparent)] md:items-center md:p-8"
+      className="fixed inset-0 z-[100] flex items-end justify-center p-0 backdrop-blur-[16px] bg-[color-mix(in_oklab,var(--bg-0)_82%,transparent)] md:items-center md:p-8"
       onClick={onClose}
     >
       <motion.div
-        initial={{ y: '100%', opacity: 0 }}
-        animate={{ y: 0,      opacity: 1 }}
-        exit={{ y: '100%',    opacity: 0 }}
+        initial={{ y: '100dvh', opacity: 0 }}
+        animate={{ y: 0,        opacity: 1 }}
+        exit={{ y: '100dvh',    opacity: 0 }}
         transition={{
           y:       { type: 'spring', stiffness: 380, damping: 40, mass: 0.9 },
           opacity: { duration: 0.22, ease: 'linear' },
         }}
         onClick={e => e.stopPropagation()}
-        className="w-full max-w-[560px] overflow-hidden border-t border-(--border) bg-(--bg-1) rounded-t-2xl md:rounded-xl md:border"
+        className="w-full max-w-[560px] max-h-[92dvh] overflow-y-auto border-t border-(--border) bg-(--bg-1) rounded-t-2xl md:rounded-xl md:border"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-7 pt-7 pb-5 border-b border-(--border)">

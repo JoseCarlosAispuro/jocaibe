@@ -1,13 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import MediaCarousel from './MediaCarousel'
 import VideoEl from './VideoEl'
 import Close from '@/app/icons/Close'
 import ExternalLink from '@/app/icons/ExternalLink'
-import ChevronLeft from '@/app/icons/ChevronLeft'
-import ChevronRight from '@/app/icons/ChevronRight'
 import { assetUrl } from '@/app/helpers/assets'
 import { EASE } from '@/app/helpers/constants'
 import type { Project } from '@/app/types/project'
@@ -30,12 +28,30 @@ interface MobileHeroSliderProps {
 }
 
 const MobileHeroSlider = ({ items, bg, page, dir, onPaginate }: MobileHeroSliderProps) => {
+  const touchStartX = useRef(0)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (items.length <= 1) return
+    const delta = touchStartX.current - e.changedTouches[0].clientX
+    if (delta > 40) onPaginate(1)
+    else if (delta < -40) onPaginate(-1)
+  }
+
   if (items.length === 0) {
     return <div className="absolute inset-0" style={{ background: bg }} />
   }
 
   return (
-    <div className="absolute inset-0" style={{ background: bg }}>
+    <div
+      className="absolute inset-0"
+      style={{ background: bg }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <AnimatePresence initial={false} custom={dir}>
         <motion.div
           key={page}
@@ -60,24 +76,6 @@ const MobileHeroSlider = ({ items, bg, page, dir, onPaginate }: MobileHeroSlider
         </motion.div>
       </AnimatePresence>
 
-      {items.length > 1 && (
-        <>
-          <button
-            onClick={() => onPaginate(-1)}
-            aria-label="Previous slide"
-            className="absolute left-3 top-1/2 z-20 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white/80"
-          >
-            <ChevronLeft size={11} />
-          </button>
-          <button
-            onClick={() => onPaginate(1)}
-            aria-label="Next slide"
-            className="absolute right-3 top-1/2 z-20 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white/80"
-          >
-            <ChevronRight size={11} />
-          </button>
-        </>
-      )}
     </div>
   )
 }
