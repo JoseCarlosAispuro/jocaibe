@@ -27,7 +27,30 @@ const useParallax = () => {
   const contentRef = useRef<HTMLDivElement>(null)
   const { fine, reduce } = useViewport()
 
+  // ── Pause CSS float animations when hero scrolls off-screen ──────────────
+  // Applies to both desktop and mobile — compositor animations still cost GPU.
+  useEffect(() => {
+    const sec     = sectionRef.current
+    const content = contentRef.current
+    if (!sec || !content) return
+    const head = content.querySelector<HTMLElement>('[data-parallax-head]')
+
+    const io = new IntersectionObserver(([entry]) => {
+      const state = entry.isIntersecting ? '' : 'paused'
+      content.style.animationPlayState = state
+      if (head) head.style.animationPlayState = state
+    }, { threshold: 0 })
+
+    io.observe(sec)
+    return () => {
+      io.disconnect()
+      content.style.animationPlayState = ''
+      if (head) head.style.animationPlayState = ''
+    }
+  }, [])
+
   // ── Desktop: mouse parallax ───────────────────────────────────────────────
+  // Event-driven RAF — self-stopping once lerp converges, no off-screen waste.
   useEffect(() => {
     const sec = sectionRef.current
     const content = contentRef.current
@@ -75,14 +98,17 @@ const useParallax = () => {
   }, [fine, reduce])
 
   // ── Mobile: auto-drift ───────────────────────────────────────────────────
+  // Continuous RAF — paused via IntersectionObserver when hero is off-screen.
   useEffect(() => {
     const content = contentRef.current
     if (!content || reduce || fine) return
 
     const head = content.querySelector<HTMLElement>('[data-parallax-head]')
     let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0
+    let visible = true
 
     const drift = (ts: number) => {
+      if (!visible) { raf = 0; return }
       const t = ts / 1000
       tx = Math.sin(t * 0.32) * 10
       ty = Math.cos(t * 0.21) * 6
@@ -94,10 +120,19 @@ const useParallax = () => {
       }
       raf = requestAnimationFrame(drift)
     }
+
+    const sec = sectionRef.current
+    const io = sec ? new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting
+      if (visible && raf === 0) raf = requestAnimationFrame(drift)
+    }, { threshold: 0 }) : null
+    if (sec && io) io.observe(sec)
+
     raf = requestAnimationFrame(drift)
 
     return () => {
       cancelAnimationFrame(raf)
+      io?.disconnect()
       content.style.removeProperty('translate')
       if (head) head.style.removeProperty('translate')
     }

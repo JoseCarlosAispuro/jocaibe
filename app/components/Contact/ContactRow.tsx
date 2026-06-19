@@ -22,7 +22,7 @@ const ContactRow = ({label, value, cta, href}: ContactLink) => {
                     hover: {color: 'var(--accent)'},
                 }}
                 transition={{duration: 0.22}}
-                className={`text-[17px] ${cta ? 'font-(--font-mono)' : 'font-(--font-body)'}`}
+                className={`text-right text-md-left text-[17px] ${cta ? 'font-(--font-mono)' : 'font-(--font-body)'}`}
             >
                 {value} {cta ? '↓' : '↗'}
             </motion.span>

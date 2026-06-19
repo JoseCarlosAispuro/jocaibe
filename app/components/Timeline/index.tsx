@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { useViewport } from '@/app/hooks/useViewport'
 import SectionHeading from '@/app/partials/SectionHeading'
 import { openContactModal } from '@/app/helpers/contactModal'
-import { EASE, HEARTBEAT_SCALE, HEARTBEAT_TIMES } from '@/app/helpers/constants'
+import { EASE } from '@/app/helpers/constants'
 import TimelineCurrent from './TimelineCurrent'
 import TimelineNode from './TimelineNode'
 import ArrowRight from '@/app/icons/ArrowRight'
@@ -76,19 +76,15 @@ const Timeline = ({ data }: { data: TimelineData }) => {
   }, [])
 
   // ── Mobile refs ──────────────────────────────────────────
-  const mobileSectionRef  = useRef<HTMLDivElement>(null)
-  const mobileFillRef     = useRef<HTMLDivElement>(null)
+  const mobileSectionRef = useRef<HTMLDivElement>(null)
+  const mobileFillRef    = useRef<HTMLDivElement>(null)
   const [activeIdx, setActiveIdx] = useState(0)
-  // Scrub refs — track last committed index and last scroll direction
-  // so we can apply hysteresis: advance at 65% through a step, retreat at 35%.
-  // This creates a 30% dwell zone where the state stays locked without
-  // requiring precise scroll position.
-  const scrubIdxRef      = useRef(0)
-  const lastProgressRef  = useRef(0)
 
   // Scroll progress through the mobile section → active index.
-  // Section top reaching the viewport top = progress 0.
-  // Section bottom reaching the viewport bottom = progress 1.
+  // Dots sit at positions i/(total-1) of the track width, so rawStep uses
+  // (total-1) as the multiplier — integer values land exactly on dot positions.
+  // Math.round() picks whichever dot the fill head is nearest to, giving
+  // precise, symmetric switching with no direction-dependent drift.
   const mobileUpdate = useCallback(() => {
     const section = mobileSectionRef.current
     if (!section) return
@@ -97,23 +93,10 @@ const Timeline = ({ data }: { data: TimelineData }) => {
     const totalRoom = Math.max(1, rect.height - window.innerHeight)
     const progress  = Math.min(1, scrolled / totalRoom)
 
-    // Hysteresis: direction determines which threshold applies.
-    // Going forward → advance when 65% through a step (floor(rawStep + 0.35))
-    // Going backward → retreat when 35% into a step (ceil(rawStep − 0.35))
-    const rawStep  = progress * total
-    const goingFwd = progress >= lastProgressRef.current
-    lastProgressRef.current = progress
-
-    const cur = scrubIdxRef.current
-    const next = goingFwd
-      ? Math.min(total - 1, Math.max(cur, Math.floor(rawStep + 0.35)))
-      : Math.max(0,         Math.min(cur, Math.ceil(rawStep  - 0.35)))
-
-    scrubIdxRef.current = next
+    const next = Math.min(total - 1, Math.max(0, Math.round(progress * (total - 1))))
     setActiveIdx(next)
 
     if (mobileFillRef.current) {
-      // Drive fill with raw progress so it moves continuously with scroll
       mobileFillRef.current.style.width = `${progress * 100}%`
     }
   }, [total])
@@ -243,7 +226,7 @@ const Timeline = ({ data }: { data: TimelineData }) => {
               ) : (
                 <div className="text-center">
                   <motion.div variants={itemVariants} className="flex items-center justify-center gap-3 mb-3">
-                    <span className="w-3 h-3 rounded-full bg-(--accent) shrink-0" style={{ boxShadow: '0 0 10px 3px var(--accent)' }} />
+                    <span className="w-3 h-3 rounded-full bg-(--accent) shrink-0" />
                     <div className="mono text-(--accent) text-[11px]">{current.period}</div>
                   </motion.div>
                   <motion.div variants={itemVariants} className="font-(--font-display) text-[clamp(28px,7vw,40px)] text-(--fg-0) leading-[1.15]">
@@ -253,21 +236,8 @@ const Timeline = ({ data }: { data: TimelineData }) => {
                     <motion.button
                       onClick={openContactModal}
                       aria-label="Open contact form"
-                      animate={{
-                        boxShadow: [
-                          '0 0 12px 3px rgba(217,240,74,0.4)',
-                          '0 0 32px 12px rgba(217,240,74,0.75)',
-                          '0 0 12px 3px rgba(217,240,74,0.4)',
-                          '0 0 24px 8px rgba(217,240,74,0.65)',
-                          '0 0 12px 3px rgba(217,240,74,0.4)',
-                          '0 0 12px 3px rgba(217,240,74,0.4)',
-                        ],
-                      }}
                       whileTap={{ scale: 0.96 }}
-                      transition={{
-                        boxShadow: { duration: 1.8, repeat: Infinity, ease: 'easeInOut', times: HEARTBEAT_TIMES },
-                        scale: { duration: 0.18 },
-                      }}
+                      transition={{ scale: { duration: 0.18 } }}
                       className="inline-flex items-center gap-3 rounded-full bg-(--accent) text-(--bg-0) font-(--font-mono) text-[13px] tracking-[0.08em] uppercase font-medium px-7 py-5"
                     >
                       Get in touch

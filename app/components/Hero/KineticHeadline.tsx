@@ -41,7 +41,18 @@ const KineticHeadline = ({ line1, line2Muted, line2Accent }: KineticHeadlineProp
   let n = 0
 
   const word = (text: string, opts: { accent?: boolean; italic?: boolean } = {}) =>
-    [...text].map((ch, i) => <Letter key={text + i} ch={ch} delay={(n++) * 24} {...opts} />)
+    // Split into words + spaces so each word is a whitespace-nowrap group.
+    // Prevents mid-word breaks on narrow screens while still allowing
+    // the browser to wrap at space characters between words.
+    text.split(/(\s+)/).map((part, wi) =>
+      /\s+/.test(part)
+        ? [...part].map((ch, i) => <Letter key={`sp-${wi}-${i}`} ch={ch} delay={(n++) * 24} {...opts} />)
+        : (
+          <span key={`w-${wi}`} className="whitespace-nowrap">
+            {[...part].map((ch, i) => <Letter key={`${wi}-${i}`} ch={ch} delay={(n++) * 24} {...opts} />)}
+          </span>
+        )
+    )
 
   return (
     <h1 className="font-(--font-display) [font-size:var(--fs-display)] font-medium tracking-[-0.04em] leading-[0.92] text-(--fg-0)">

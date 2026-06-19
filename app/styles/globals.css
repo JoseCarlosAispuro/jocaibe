@@ -54,7 +54,7 @@
   --s-9: 96px;
   --s-10: 128px;
   --s-11: 192px;
-  --s-section: clamp(96px, 14vw, 192px);
+  --s-section: 80px;
 
   /* Layout */
   --gutter: clamp(20px, 4vw, 48px);
@@ -109,6 +109,10 @@
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
     transition: background var(--d-slow) var(--ease-out);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
   }
 
   a {

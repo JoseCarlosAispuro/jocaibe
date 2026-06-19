@@ -42,7 +42,7 @@ const TimelineCurrent = ({
               : { duration: 0.32 }
           }
           className="absolute top-2 w-4 h-4 rounded-full bg-(--accent) outline-[6px] outline-solid outline-(--bg-0) left-[calc(clamp(20px,4vw,36px)-8px)]"
-          style={{ boxShadow: lit ? '0 0 12px 3px var(--accent)' : 'none' }}
+          style={{ boxShadow: 'none' }}
         />
       </div>
       <div>

@@ -31,7 +31,7 @@ const Contact = ({ data }: { data: ContactData }) => {
         <>
             <section
                 id="contact"
-                className="relative overflow-hidden bg-(--bg-1) border-t border-(--border) pt-(--s-section) pb-(--s-7)"
+                className="relative overflow-hidden bg-(--bg-1) pt-(--s-section) pb-(--s-7)"
             >
                 <div className="container mx-auto px-(--gutter) relative z-[2]">
                     <Reveal delay={100}>

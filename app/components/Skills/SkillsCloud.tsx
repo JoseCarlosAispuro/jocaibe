@@ -1,8 +1,10 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useLenis } from 'lenis/react'
+import { motion, AnimatePresence } from 'motion/react'
 import { useViewport } from '@/app/hooks/useViewport'
+import { EASE } from '@/app/helpers/constants'
 
 interface SkillGroup {
   cat: string
@@ -13,22 +15,33 @@ interface SpringEl extends HTMLElement {
   __spring?: { x: number; y: number; g: number }
 }
 
+// Super-smooth enter curve: fast off the mark, long gentle ease to rest
+const SMOOTH = [0.22, 1, 0.36, 1] as [number, number, number, number]
+// Crisp exit: starts immediately, no lingering
+const SMOOTH_OUT = [0.4, 0, 1, 1] as [number, number, number, number]
+
+const chipClass =
+  'rounded-full border border-(--border) bg-(--bg-1) px-[18px] py-3 text-[clamp(14px,1.2vw,17px)] font-(--font-display) font-normal tracking-[-0.01em] text-(--fg-1) whitespace-nowrap will-change-transform'
+
 const SkillsCloud = ({ groups }: { groups: SkillGroup[] }) => {
+  const [activeIdx, setActiveIdx] = useState(0)
   const chipRefs = useRef<(HTMLSpanElement | null)[]>([])
   const { fine, hover, reduce, vw } = useViewport()
-  // Stable ref to the measure fn — updated inside the effect so the Lenis
-  // callback (defined at component level) can re-measure on scroll.
   const measureRef = useRef<() => void>(() => {})
 
   useLenis(() => { measureRef.current() })
+
+  // Re-measure after tab switch — chips re-render at new positions
+  useEffect(() => {
+    const id = requestAnimationFrame(() => { measureRef.current() })
+    return () => cancelAnimationFrame(id)
+  }, [activeIdx])
 
   useEffect(() => {
     if (reduce || !fine || !hover) return
 
     let mx = -9999, my = -9999, raf = 0
     const radius = 175
-
-    // Cached chip centre positions — never read in RAF loop
     const centres: { cx: number; cy: number }[] = []
 
     const measure = () => {
@@ -90,40 +103,93 @@ const SkillsCloud = ({ groups }: { groups: SkillGroup[] }) => {
     }
   }, [fine, hover, reduce])
 
-  // Re-measure chip positions when viewport width changes (replaces native resize listener)
   useEffect(() => { measureRef.current() }, [vw])
 
-  const offsets: number[] = []
-  let acc = 0
-  groups.forEach((g) => { offsets.push(acc); acc += g.items.length })
+  const activeGroup = groups[activeIdx]
 
   return (
-    <div className="mt-20">
-      <p className="mono mb-11 text-(--fg-3)">
-        Move through the stack — it moves with you ↘
-      </p>
-      <div className="flex flex-col gap-11">
-        {groups.map((g, gi) => (
-          <div
-            key={g.cat}
-            className="flex flex-col gap-3 pt-6 border-t border-(--border-strong) md:grid md:items-start md:[grid-template-columns:clamp(140px,18vw,240px)_1fr] md:gap-[clamp(20px,4vw,56px)]"
+    <div className="mt-16">
+
+      {/* Tab bar */}
+      <div
+        role="tablist"
+        aria-label="Skill categories"
+        className="flex overflow-x-auto border-b border-(--border-strong) [scrollbar-width:none] [-webkit-overflow-scrolling:touch]"
+      >
+        {groups.map((g, i) => {
+          const isActive = activeIdx === i
+          return (
+            <button
+              key={g.cat}
+              role="tab"
+              aria-selected={isActive}
+              aria-controls="skills-panel"
+              onClick={() => setActiveIdx(i)}
+              className="relative flex shrink-0 items-center px-6 py-4 outline-none"
+            >
+              <motion.span
+                animate={{ color: isActive ? 'var(--fg-0)' : 'var(--fg-3)' }}
+                transition={{ duration: 0.22, ease: EASE }}
+                className="mono whitespace-nowrap"
+              >
+                {g.cat}
+              </motion.span>
+
+              {/* Sliding active underline */}
+              {isActive && (
+                <motion.div
+                  layoutId="tab-indicator"
+                  className="absolute bottom-0 left-0 right-0 h-px bg-(--accent)"
+                  transition={{ duration: 0.38, ease: SMOOTH }}
+                />
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Tab panel */}
+      <div
+        id="skills-panel"
+        role="tabpanel"
+        aria-label={activeGroup.cat}
+        className="pt-10 min-h-[160px]"
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeIdx}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{
+              duration: 0.38,
+              ease: SMOOTH,
+              exit: { duration: 0.18, ease: SMOOTH_OUT },
+            }}
           >
-            <div className="mono pt-2 text-(--accent)">{g.cat}</div>
-            <div className="flex flex-wrap gap-3" role="list" aria-label={`${g.cat} skills`}>
-              {g.items.map((it, i) => (
-                <span
+            <div
+              className="flex flex-wrap gap-3"
+              role="list"
+              aria-label={`${activeGroup.cat} skills`}
+            >
+              {activeGroup.items.map((it, i) => (
+                <motion.span
                   key={it}
                   role="listitem"
-                  ref={(el) => { chipRefs.current[offsets[gi] + i] = el }}
-                  className="rounded-full border border-(--border) bg-(--bg-1) px-[18px] py-3 text-[clamp(14px,1.2vw,17px)] font-(--font-display) font-normal tracking-[-0.01em] text-(--fg-1) whitespace-nowrap will-change-transform"
+                  ref={(el) => { chipRefs.current[i] = el }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.36, delay: i * 0.055, ease: SMOOTH }}
+                  className={chipClass}
                 >
                   {it}
-                </span>
+                </motion.span>
               ))}
             </div>
-          </div>
-        ))}
+          </motion.div>
+        </AnimatePresence>
       </div>
+
     </div>
   )
 }

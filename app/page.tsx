@@ -3,6 +3,7 @@ import heroData from '@/app/data/hero.json'
 import timelineData from '@/app/data/timeline.json'
 import projectsData from '@/app/data/projects.json'
 import skillsData from '@/app/data/skills.json'
+import calloutData from '@/app/data/callout.json'
 import contactData from '@/app/data/contact.json'
 import pageData from '@/app/data/page.json'
 
@@ -13,6 +14,7 @@ import Hero from '@/app/components/Hero'
 import Timeline from '@/app/components/Timeline'
 import Projects from '@/app/components/Projects'
 import Skills from '@/app/components/Skills'
+import Callout from '@/app/components/Callout'
 import Contact from '@/app/components/Contact'
 import Footer from "@/app/partials/Footer";
 
@@ -30,6 +32,7 @@ const Home = () => {
         <Timeline data={timelineData} />
         <Projects data={{ projects: projectsData as never }} />
         <Skills data={skillsData} />
+        <Callout data={calloutData} />
         <Contact data={contactData} />
       </main>
         <Footer/>
