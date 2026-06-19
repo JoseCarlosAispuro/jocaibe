@@ -23,7 +23,7 @@ const ACCENT: [number, number, number] = [217, 240, 74]
 // Pre-computed constant — all non-glowing dots share this color every frame
 const DIM_COLOR = `rgba(255,255,255,${DIM})`
 
-export const initHeroShader = (canvas: HTMLCanvasElement): () => void => {
+export const initHeroShader = (canvas: HTMLCanvasElement): { cleanup: () => void; handleResize: () => void } => {
   const ctx = canvas.getContext('2d', { alpha: true })!
   const dpr = Math.min(window.devicePixelRatio || 1, 2)
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
