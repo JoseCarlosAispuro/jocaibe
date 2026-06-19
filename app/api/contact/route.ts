@@ -1,6 +1,8 @@
 import { Resend } from 'resend'
 import { NextResponse } from 'next/server'
 
+export const runtime = 'edge'
+
 const resend     = new Resend(process.env.RESEND_API_KEY)
 const TO_ADDRESS = process.env.TO_ADDRESS
 const FROM       = 'Portfolio Contact <no-reply@jocaibe.com>'
