@@ -49,6 +49,8 @@ For each file, report **ERROR** (blocks commit) or **WARN** (should fix) against
 | T19 | Custom hooks or components that re-measure positions on scroll must use the `measureRef` + `useLenis` pattern — not `window.addEventListener('scroll', measure)` | ERROR |
 | T20 | Custom hooks that drive a RAF loop from scroll must use the `startLoopRef` + `useLenis` pattern — not `window.addEventListener('scroll', startLoop)` | ERROR |
 | T21 | No `window.addEventListener('resize', ...)` in components, hooks, or vanilla helpers — use `useViewport` (`vw`/`vh` deps in `useEffect`) for viewport-driven remeasure. Vanilla JS helpers must expose a `handleResize()` method and let the host component call it via `useViewport`. Exception: `ResizeObserver` is allowed for element-specific size tracking (independent of viewport size). | ERROR |
+| T22 | Metadata (`title`, `description`, OG, Twitter, icons) must live in `app/metadata.ts` and be re-exported from there — never defined inline inside `app/layout.tsx` | ERROR |
+| T23 | Google Analytics / third-party scripts must be placed in `app/partials/Analytics.tsx` using Next.js `<Script strategy="afterInteractive">` — never raw `<script>` tags in layout or page files | ERROR |
 
 ### CSS / SCSS / SASS rules
 
