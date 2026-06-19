@@ -2,17 +2,21 @@
 
 import { motion } from 'motion/react'
 import Reveal from '@/app/partials/Reveal'
+import { openContactModal } from '@/app/helpers/contactModal'
+import ArrowRight from '@/app/icons/ArrowRight'
 import { Role } from './index'
 
 const TimelineNode = ({
   role,
   idx,
   lit,
+  isLast,
   registerDot,
 }: {
   role: Role
   idx: number
   lit: boolean
+  isLast?: boolean
   registerDot: (el: HTMLSpanElement | null) => void
 }) => {
   return (
@@ -45,6 +49,17 @@ const TimelineNode = ({
           </h3>
           <div className="text-[14px] text-(--fg-2) mt-1">{role.role}</div>
           <div className="mono mt-3 text-(--fg-3)">{role.location}</div>
+
+          {isLast && (
+            <button
+              onClick={openContactModal}
+              aria-label="Open contact form"
+              className="mt-6 inline-flex items-center gap-3 rounded-full bg-(--accent) text-(--bg-0) font-(--font-mono) text-[13px] tracking-[0.08em] uppercase font-medium px-6 py-3"
+            >
+              Get in touch
+              <ArrowRight />
+            </button>
+          )}
         </div>
 
         {/* Middle col — bullets */}

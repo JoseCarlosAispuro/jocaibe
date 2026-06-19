@@ -7,31 +7,44 @@
       "company": "Butchershop Maniak",
       "role": "Senior Frontend / Full-Stack Lead",
       "period": "2018 — 2023",
-      "location": "Mexico / Remote",
+      "location": "Guadalajara / Remote",
       "bullets": [
-        "Led frontend architecture across 14+ agency engagements",
-        "Awwwards Honorable Mention, 2022",
-        "Headless CMS migrations: WordPress → Strapi / Statamic",
-        "Mentored 4 mid-level engineers; ran sprint planning"
+        "Led frontend architecture across 14+ agency engagements, mentoring engineers and running sprint planning",
+        "Delivered enterprise-scale builds including Appfire (25,000+ customers) and Just Women's Sports (real-time multi-league scores)",
+        "Built Qrypt's homepage — WebGL + Three.js + scroll combined into a single immersive experience",
+        "Awwwards Honorable Mention 2022; headless CMS migrations across WordPress, Strapi and Statamic"
       ],
-      "stack": ["Vue", "Nuxt.js", "WordPress", "Statamic", "Three.js"]
+      "stack": ["Vue", "Nuxt.js", "WordPress", "Statamic", "Strapi", "Next.js", "GraphQL", "Typesense", "Three.js", "PHP"]
     },
     {
       "company": "Strange Pixels",
       "role": "Senior Frontend Engineer",
-      "period": "2023 — 2026",
+      "period": "2023 — 2025",
       "location": "Remote",
       "bullets": [
-        "Built Wing (Alphabet) marketing surfaces; Core Web Vitals top-decile",
-        "Awwwards Site of the Day for Thick Pickle, 2024",
-        "Headless Shopify Storefront architecture for Octaura",
-        "AI tooling integration — Claude Code, Opencode in production workflow"
+        "Awwwards Site of the Day for Thick Pickle, 2024 — led full Shopify storefront integration",
+        "Built Wing (Alphabet) from scratch on Framer, including a custom PNG sequence animation system",
+        "Scroll-bound animation lead on Octaura; delivered Aerika Estate and Swisher Blunts brand experiences",
+        "Integrated AI tooling — Claude Code and Opencode — into production workflow"
       ],
-      "stack": ["Next.js", "React", "Shopify SF API", "Framer Motion", "Three.js"]
+      "stack": ["Next.js", "React", "TypeScript", "Framer", "Framer Motion", "Shopify", "Vue", "WordPress", "Commerce 7", "PHP", "CSS Animations"]
+    },
+    {
+      "company": "Independent",
+      "role": "Independent FullStack Engineer",
+      "period": "2025 — Present",
+      "location": "Remote",
+      "bullets": [
+        "Lookingglass Theatre full site build — scroll animations, drag carousel, and contextual calendar integration",
+        "Taking on select client work across the full stack while building personal projects independently",
+        "Operating with full ownership — from architecture decisions to final delivery",
+        "Open to new collaborations and long-term engagements"
+      ],
+      "stack": ["WordPress", "PHP", "CSS Animations"]
     }
   ],
   "current": {
-    "period": "2026 — Present",
+    "period": "2025 — Present",
     "label": "Open for new work."
   }
 }
