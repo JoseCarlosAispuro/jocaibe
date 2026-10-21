@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 
-const TITLE       = 'Jose Aispuro — Senior Frontend Engineer'
-const DESCRIPTION = 'Senior Frontend Engineer specialising in interactive web experiences. Award-winning work across product, creative and agency. Open to full-time remote roles.'
+const TITLE       = 'José Aispuro — Senior Frontend Engineer · Interactive & Motion'
+const TITLE_OG    = 'José Aispuro — Senior Frontend Engineer'
+const DESCRIPTION = 'Senior Frontend Engineer specialising in React, Next.js, and motion-driven web experiences. Award-winning work for Alphabet and global agencies. Open to remote roles.'
+const DESCRIPTION_OG = 'Eight years building award-winning web experiences for Alphabet, agencies, and headless commerce. Awwwards SOTD 2024.'
 const SITE_URL    = 'https://jocaibe.com'
 
 export const metadata: Metadata = {
@@ -9,22 +11,40 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   metadataBase: new URL(SITE_URL),
 
+  authors: [{ name: 'José Carlos Aispuro Beltrán', url: SITE_URL }],
+
+  keywords: [
+    'Senior Frontend Engineer',
+    'React',
+    'Next.js',
+    'TypeScript',
+    'Motion',
+    'WebGL',
+    'Three.js',
+    'Framer Motion',
+    'GSAP',
+    'Remote',
+  ],
+
+  robots: { index: true, follow: true },
+
   openGraph: {
     type:        'website',
     url:         SITE_URL,
-    title:       TITLE,
-    description: DESCRIPTION,
+    title:       TITLE_OG,
+    description: DESCRIPTION_OG,
     siteName:    'jocaibe',
+    locale:      'en_US',
     images: [
-      { url: '/og.png',        width: 1200, height: 630,  alt: TITLE },
-      { url: '/og-square.png', width: 1200, height: 1200, alt: TITLE },
+      { url: '/og.png',        width: 1200, height: 630,  alt: TITLE_OG },
+      { url: '/og-square.png', width: 1200, height: 1200, alt: TITLE_OG },
     ],
   },
 
   twitter: {
     card:        'summary_large_image',
-    title:       TITLE,
-    description: DESCRIPTION,
+    title:       TITLE_OG,
+    description: DESCRIPTION_OG,
     images:      ['/og.png'],
   },
 

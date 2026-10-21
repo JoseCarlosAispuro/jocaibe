@@ -20,6 +20,15 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['300', '400', '500', '600'],
 })
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'José Carlos Aispuro Beltrán',
+  jobTitle: 'Senior Frontend Engineer',
+  url: 'https://jocaibe.com',
+  sameAs: ['https://linkedin.com/in/jc-aispuro-beltran'],
+}
+
 const RootLayout = ({
   children,
 }: Readonly<{
@@ -30,6 +39,12 @@ const RootLayout = ({
       lang="en"
       className={`${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body>
         <LenisProvider>{children}</LenisProvider>
         <Analytics />
