@@ -11,15 +11,15 @@
       "bullets": [
         "Led frontend architecture across 14+ agency engagements, mentoring engineers and running sprint planning",
         "Delivered enterprise-scale builds including Appfire (25,000+ customers) and Just Women's Sports (real-time multi-league scores)",
-        "Built Qrypt's homepage — WebGL + Three.js + scroll combined into a single immersive experience",
+        "Built Qrypt's homepage — Three.js scene driven by GSAP ScrollTrigger, WebGL and scroll combined into a single immersive experience",
         "Awwwards Honorable Mention 2022; headless CMS migrations across WordPress, Strapi and Statamic"
       ],
       "stack": ["Vue", "Nuxt.js", "WordPress", "Statamic", "Strapi", "Next.js", "GraphQL", "Typesense", "Three.js", "PHP"]
     },
     {
       "company": "Strange Pixels",
-      "role": "Senior Frontend Engineer",
-      "period": "2023 — 2025",
+      "role": "Senior Full-Stack Engineer",
+      "period": "2023 — 2026",
       "location": "Remote",
       "bullets": [
         "Awwwards Site of the Day for Thick Pickle, 2024 — led full Shopify storefront integration",
@@ -31,8 +31,8 @@
     },
     {
       "company": "Independent",
-      "role": "Independent FullStack Engineer",
-      "period": "2025 — Present",
+      "role": "Senior Full-Stack Engineer",
+      "period": "2026 — Present",
       "location": "Remote",
       "bullets": [
         "Lookingglass Theatre full site build — scroll animations, drag carousel, and contextual calendar integration",
@@ -44,7 +44,7 @@
     }
   ],
   "current": {
-    "period": "2025 — Present",
+    "period": "2026 — Present",
     "label": "Open for new work."
   }
 }
