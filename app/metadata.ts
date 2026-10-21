@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 const TITLE       = 'Jose Aispuro — Senior Frontend Engineer'
-const DESCRIPTION = 'Senior Frontend Engineer specialising in interactive web experiences. Award-winning work across product, creative and agency. Available for Q3 2026.'
+const DESCRIPTION = 'Senior Frontend Engineer specialising in interactive web experiences. Award-winning work across product, creative and agency. Open to full-time remote roles.'
 const SITE_URL    = 'https://jocaibe.com'
 
 export const metadata: Metadata = {

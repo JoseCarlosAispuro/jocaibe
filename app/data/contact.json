@@ -10,5 +10,5 @@
     { "label": "Location", "value": "México · GMT-7", "href": null }
   ],
   "footer": "© 2026 José Carlos Aispuro Beltrán",
-  "footerStack": "Built with Next.js · Tailwind · Three.js"
+  "footerStack": "Built with Next.js · Tailwind · GSAP · Three.js"
 }

@@ -158,7 +158,7 @@
         "engagement"
       ]
     ],
-    "summary": "A headless financial platform where the design language lived in motion. I was responsible for the scroll-bound animations throughout the site — sequences that had to feel precise and intentional, not decorative, given the enterprise audience.",
+    "summary": "A headless financial platform where the design language lived in motion. I was responsible for all scroll-controlled animations throughout the site (Framer Motion) — sequences that had to feel precise and intentional, not decorative, given the enterprise audience.",
     "bg": "linear-gradient(135deg, oklch(0.30 0.10 280) 0%, oklch(0.20 0.06 290) 60%, oklch(0.13 0.03 300) 100%)",
     "accentText": "#c084fc",
     "video": "/projects/octaura-demo.webm",
@@ -200,7 +200,7 @@
         "video sequences"
       ]
     ],
-    "summary": "A brand experience built to feel tactile. I worked on scroll-driven video sequences, flavor reveal animations, an interactive audio layer, and the age-gate flow — all of it choreographed to make the site feel more like a product than a page.",
+    "summary": "A brand experience built to feel tactile. I built the entire site except the final module (Framer Motion) — scroll-driven video sequences, flavor reveal animations, an interactive audio layer, and the age-gate flow, all choreographed to make the site feel more like a product than a page.",
     "bg": "linear-gradient(135deg, oklch(0.38 0.16 60) 0%, oklch(0.26 0.10 40) 60%, oklch(0.16 0.05 30) 100%)",
     "accentText": "#fbbf24",
     "video": "/projects/swisher-demo.webm",
@@ -325,7 +325,7 @@
         "technical"
       ]
     ],
-    "summary": "My focus was the homepage — building it as an experience rather than a page. I combined scroll, WebGL, and Three.js into a single cohesive animation that gives weight to what quantum encryption actually feels like, not just what it is.",
+    "summary": "My focus was the homepage — building it as an experience rather than a page. I built a Three.js scene driven by GSAP ScrollTrigger, combining scroll, WebGL, and Three.js into a single cohesive animation that gives weight to what quantum encryption actually feels like, not just what it is.",
     "bg": "linear-gradient(135deg, #0a0a0d 0%, #111114 60%, #06060a 100%)",
     "accentText": "#5eead4",
     "video": "/projects/qrypt-demo.webm",
